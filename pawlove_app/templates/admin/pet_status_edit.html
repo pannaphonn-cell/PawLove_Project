@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}อัปเดตสถานะของ {{ pet.name }} - ผู้ดูแลระบบ PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; padding-top: 1.5rem; padding-bottom: 3.5rem;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('admin.pets_list') }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.95rem;">
+      ← กลับไปยังรายการสัตว์ทั้งหมด
+    </a>
+  </div>
+
+  <!-- การ์ดฟอร์มอัปเดตสถานะ (ข้อกำหนดที่ 6) -->
+  <div class="card" style="border-top: 5px solid var(--secondary); margin-bottom: 2.5rem;">
+    <div class="card-body" style="padding: 2.5rem 2rem;">
+      <div style="display: flex; gap: 1.25rem; align-items: center; margin-bottom: 1.5rem;">
+        <img 
+          src="{{ pet.image_url }}" 
+          alt="{{ pet.name }}" 
+          style="width: 75px; height: 75px; object-fit: cover; border-radius: 10px;"
+          onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800'"
+        >
+        <div>
+          <span class="admin-menu-badge"><i class="fa-regular fa-clock" style="margin-right: 0.35rem;"></i></span>
+          <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-top: 0.2rem;">
+            อัปเดตสถานะน้อง {{ pet.name }}
+          </h1>
+          <p style="font-size: 0.9rem; color: #64748b;">
+            สถานะปัจจุบันในขณะนี้: <strong>{{ pet.status }}</strong>
+          </p>
+        </div>
+      </div>
+
+      <form method="POST" action="{{ url_for('admin.pet_status_update', pet_id=pet.id) }}">
+        <!-- 1. เลือกสถานะ (4 สถานะตามข้อ 6) -->
+        <div class="form-group">
+          <label class="form-label" for="status">เลือกสถานะใหม่ *</label>
+          <select id="status" name="status" class="form-control" onchange="updateStepOptions()" required>
+            <option value="กำลังหาบ้าน(สุขภาพดี)" {% if 'กำลังหาบ้าน' in pet.status or 'สุขภาพดี' in pet.status %}selected{% endif %}>
+              กำลังหาบ้าน(สุขภาพดี)
+            </option>
+            <option value="กำลังอยู่ระหว่างการรักษา" {% if 'รักษา' in pet.status %}selected{% endif %}>
+              กำลังอยู่ระหว่างการรักษา
+            </option>
+            <option value="รอรับการช่วยเหลือ" {% if 'รอรับการช่วยเหลือ' in pet.status %}selected{% endif %}>
+              รอรับการช่วยเหลือ
+            </option>
+            <option value="หาบ้านได้แล้ว" {% if 'หาบ้านได้แล้ว' in pet.status %}selected{% endif %}>
+              หาบ้านได้แล้ว
+            </option>
+          </select>
+        <!-- ยอดบริจาคเป้าหมาย (สำหรับสถานะ อยู่ระหว่างการรักษา และ รอรับการช่วยเหลือ) -->
+        <div id="donationTargetGroup" class="form-group" style="display: none; background: #fff7ed; padding: 1.25rem; border-radius: 8px; border: 1.5px solid #fed7aa; margin-bottom: 1.5rem;">
+          <label class="form-label" for="donation_target" style="color: #9a3412; font-weight: 700;">
+            <i class="fa-solid fa-hand-holding-dollar" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> กำหนดยอดบริจาคเป้าหมาย (บาท)
+          </label>
+          <input 
+            type="number" 
+            id="donation_target" 
+            name="donation_target" 
+            class="form-control" 
+            placeholder="เช่น 5000" 
+            min="0" 
+            step="100" 
+            value="{{ pet.donation_target if pet.donation_target else 5000 }}"
+            style="background: white;"
+          >
+          <small style="color: #c2410c; font-size: 0.825rem; display: block; margin-top: 0.35rem;">
+            กำหนดเป้าหมายยอดระดมทุนสำหรับเคสนี้ (แสดงความคืบหน้าในหน้าแรกและหน้าบริจาค)
+          </small>
+        </div>
+
+        <!-- 2. เลือกขั้นตอนใน Timeline สำหรับสถานะที่ 2, 3, 4 -->
+        <div id="stepSelectionGroup" class="form-group" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+            <span><i class="fa-solid fa-location-dot" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> ขั้นตอนที่กำลังดำเนินการใน Timeline (ขั้นตอนที่ 1-5):</span>
+            <span id="stepHelpBadge" style="font-size: 0.75rem; background: var(--primary-orange); color: white; padding: 0.15rem 0.5rem; border-radius: 10px; font-weight: 700;">
+              เลือกขั้นตอน
+            </span>
+          </label>
+          
+          <div id="stepOptionsContainer" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+            <!-- ตัวเลือกจะถูกสร้างโดย JavaScript ตามสถานะที่เลือก -->
+          </div>
+
+          <div id="statusReadyNotice" style="display: none; padding: 0.5rem; color: #166534; font-size: 0.885rem;">
+            <i class="fa-solid fa-circle-check" style="margin-right: 0.35rem;"></i> <strong>สถานะหลัก:</strong> น้องพร้อมสำหรับการหาครอบครัวใหม่ทันที โดยแสดงข้อมูลประวัติและรูปภาพครบถ้วน ไม่ต้องแสดงขั้นตอนย่อยตามที่กำหนด
+          </div>
+        </div>
+
+        <!-- 3. ระบุรายละเอียดในการอัปเดต (ข้อกำหนดที่ 6) -->
+        <div class="form-group">
+          <label class="form-label" for="details">รายละเอียดหรือบันทึกเพิ่มเติมในการอัปเดต *</label>
+          <textarea 
+            id="details" 
+            name="details" 
+            class="form-control" 
+            placeholder="ระบุความคืบหน้าของสัตว์ เช่น อาการ ผลตรวจ หรือบันทึกจากเจ้าหน้าที่..." 
+            rows="3" 
+            required
+          ></textarea>
+        </div>
+
+        <!-- 4. วันที่และเวลาในการอัปเดต (ข้อกำหนดที่ 6) -->
+        <div class="form-group">
+          <label class="form-label" for="update_datetime">
+            วันที่ และ เวลา ในการอัปเดต (หากเว้นว่างจะใช้วันที่และเวลาปัจจุบันอัตโนมัติ)
+          </label>
+          <input 
+            type="text" 
+            id="update_datetime" 
+            name="update_datetime" 
+            class="form-control" 
+            placeholder="เช่น 14/10/2026 14:30 น."
+          >
+          <small style="color: var(--text-muted); font-size: 0.85rem; display: block; margin-top: 0.25rem;">
+            * ระบบจะบันทึกวันและเวลาอย่างเป็นทางการลงในไทม์ไลน์
+          </small>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-lg" style="width: 100%; padding: 0.85rem;">
+          <i class="fa-solid fa-floppy-disk" style="margin-right: 0.35rem;"></i> บันทึกการอัปเดตสถานะและไทม์ไลน์
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const timelineDataMap = {
+      'กำลังอยู่ระหว่างการรักษา': [
+        { step: 1, title: 'รับแจ้งข้อมูลน้องและปัญหาที่พบ', desc: 'รับแจ้งเคสและปัญหาที่พบเบื้องต้น' },
+        { step: 2, title: 'ประเมินอาการและวางแผนการรักษา', desc: 'สัตวแพทย์ตรวจร่างกายและวางแผนการรักษา' },
+        { step: 3, title: 'อยู่ระหว่างการรักษาโดยสัตวแพทย์', desc: 'อยู่ระหว่างการรักษาโดยสัตวแพทย์' },
+        { step: 4, title: 'ติดตามอาการและประเมินผลการรักษา', desc: 'ติดตามอาการและประเมินผลการรักษา' },
+        { step: 5, title: 'รักษาเสร็จสิ้นและเตรียมดูแลต่อ', desc: 'รักษาเสร็จสิ้นและเตรียมดูแลต่อ' }
+      ],
+      'รอรับการช่วยเหลือ': [
+        { step: 1, title: 'รับแจ้งข้อมูลและรายละเอียดของน้อง', desc: 'รับแจ้งข้อมูลและรายละเอียดของน้อง' },
+        { step: 2, title: 'ตรวจสอบข้อมูลและประเมินความเร่งด่วน', desc: 'ตรวจสอบข้อมูลและประเมินความเร่งด่วน' },
+        { step: 3, title: 'รอจัดสรรผู้ช่วยเหลือหรือทรัพยากร', desc: 'รอจัดสรรผู้ช่วยเหลือหรือทรัพยากร' },
+        { step: 4, title: 'ประสานงานเพื่อเข้าช่วยเหลือ', desc: 'ประสานงานเพื่อเข้าช่วยเหลือ' },
+        { step: 5, title: 'ได้รับการช่วยเหลือและประเมินการดูแลต่อไป', desc: 'ได้รับการช่วยเหลือและประเมินการดูแลต่อไป' }
+      ],
+      'หาบ้านได้แล้ว': [
+        { step: 1, title: 'มีผู้สนใจรับเลี้ยงน้อง', desc: 'มีผู้สนใจรับเลี้ยงน้อง' },
+        { step: 2, title: 'ตรวจสอบและประสานงานกับผู้รับเลี้ยง', desc: 'ตรวจสอบและประสานงานกับผู้รับเลี้ยง' },
+        { step: 3, title: 'นัดหมายส่งมอบน้อง', desc: 'นัดหมายส่งมอบน้อง' },
+        { step: 4, title: 'ส่งมอบน้องให้ครอบครัวใหม่เรียบร้อย', desc: 'ส่งมอบน้องให้ครอบครัวใหม่เรียบร้อย' },
+        { step: 5, title: 'ปิดเคสการหาบ้านสำเร็จ', desc: 'ปิดเคสการหาบ้านสำเร็จ' }
+      ]
+    };
+
+    const currentPetStep = Number("{{ pet.current_step|default(1, true) }}");
+
+    function updateStepOptions() {
+      const statusSelect = document.getElementById('status');
+      const val = statusSelect.value;
+      const container = document.getElementById('stepOptionsContainer');
+      const notice = document.getElementById('statusReadyNotice');
+      const targetGroup = document.getElementById('donationTargetGroup');
+      if (targetGroup) {
+        if (val.includes('รักษา') || val.includes('รอรับการช่วยเหลือ') || val.includes('รอ')) {
+          targetGroup.style.display = 'block';
+        } else {
+          targetGroup.style.display = 'none';
+        }
+      }
+
+      container.innerHTML = '';
+
+      if (val.includes('กำลังหาบ้าน')) {
+        container.style.display = 'none';
+        notice.style.display = 'block';
+        badge.textContent = 'สถานะหลัก';
+        badge.style.background = '#10b981';
+        if (!detailsInput.value) {
+          detailsInput.value = 'น้องพร้อมสำหรับการหาครอบครัวใหม่ สุขภาพแข็งแรงสมบูรณ์ พร้อมเปิดรับการรับเลี้ยง';
+        }
+      } else {
+        container.style.display = 'flex';
+        notice.style.display = 'none';
+        badge.textContent = 'เลือกขั้นตอน 1-5';
+        badge.style.background = 'var(--primary-orange)';
+
+        let matchedKey = 'กำลังอยู่ระหว่างการรักษา';
+        if (val.includes('รอรับการช่วยเหลือ')) matchedKey = 'รอรับการช่วยเหลือ';
+        if (val.includes('หาบ้านได้แล้ว')) matchedKey = 'หาบ้านได้แล้ว';
+
+        const steps = timelineDataMap[matchedKey] || [];
+        steps.forEach((s) => {
+          const label = document.createElement('label');
+          label.style.display = 'flex';
+          label.style.alignItems = 'center';
+          label.style.gap = '0.65rem';
+          label.style.padding = '0.5rem 0.75rem';
+          label.style.background = (s.step === currentPetStep) ? '#fff7ed' : '#ffffff';
+          label.style.border = (s.step === currentPetStep) ? '1px solid #fdba74' : '1px solid #e2e8f0';
+          label.style.borderRadius = '6px';
+          label.style.cursor = 'pointer';
+          label.style.fontSize = '0.885rem';
+
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = 'current_step';
+          radio.value = s.step;
+          if (s.step === currentPetStep) radio.checked = true;
+
+          radio.onchange = function() {
+            if (!detailsInput.value || detailsInput.value.startsWith('ขั้นตอนที่')) {
+              detailsInput.value = 'ขั้นตอนที่ ' + s.step + ': ' + s.title;
+            }
+          };
+
+          const textSpan = document.createElement('span');
+          textSpan.innerHTML = '<strong>ขั้นที่ ' + s.step + ':</strong> ' + s.title;
+
+          label.appendChild(radio);
+          label.appendChild(textSpan);
+          container.appendChild(label);
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', updateStepOptions);
+  </script>
+
+  <!-- ประวัติการอัปเดตสถานะทั้งหมด (Timeline) -->
+  <div class="card">
+    <div class="card-header">
+      <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-dark);">
+        <i class="fa-regular fa-calendar-days" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> ประวัติการอัปเดตสถานะที่ผ่านมา (Status Timeline)
+      </h3>
+    </div>
+    <div class="card-body">
+      {% if history %}
+        <div class="timeline">
+          {% for h in history %}
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
+                <span class="status-badge 
+                  {% if 'กำลังหาบ้าน' in h.status or 'สุขภาพดี' in h.status %}status-healthy
+                  {% elif 'รักษา' in h.status %}status-treating
+                  {% elif 'รอรับการช่วยเหลือ' in h.status or 'รอ' in h.status %}status-waiting
+                  {% else %}status-adopted{% endif %}" style="font-size: 0.85rem;">
+                  {{ h.status }}
+                </span>
+                <span style="font-size: 0.85rem; font-weight: 600; color: #0284c7;">
+                  <i class="fa-regular fa-clock" style="margin-right: 0.35rem;"></i> วันที่และเวลา: {{ h.updated_at }}
+                </span>
+              </div>
+              <p style="color: #334155; font-size: 0.95rem; line-height: 1.6; margin-bottom: 0.4rem;">
+                {{ h.details }}
+              </p>
+              <div style="font-size: 0.8rem; color: #94a3b8;">
+                ผู้อัปเดต: {{ h.updated_by }}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="text-align: center; color: var(--text-muted); padding: 2rem;">
+          ยังไม่มีประวัติการอัปเดตสถานะสำหรับสัตว์ตัวนี้
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

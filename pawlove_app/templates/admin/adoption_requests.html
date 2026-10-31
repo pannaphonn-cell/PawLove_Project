@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}คำขอรับเลี้ยงสัตว์ (แบบฟอร์ม 9.1) - ผู้ดูแลระบบ PawLove{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div style="margin-bottom: 2rem;">
+    <span class="admin-menu-badge">📋 แบบฟอร์ม</span>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-dark); margin-top: 0.3rem;">
+      รายการคำขอรับเลี้ยงสัตว์ (Adoption Applications)
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      ข้อมูลผู้ยื่นขอรับเลี้ยงตามแบบฟอร์มการสอบถามข้อมูลเบื้องต้น เพื่อการประสานงานสัมภาษณ์วิดีโอคอล
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding: 1.5rem;">
+      {% if adoptions %}
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          {% for app in adoptions %}
+          <div class="card" style="border: 1px solid var(--border-color);">
+            <div class="card-header" style="background: #fafafa;">
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <img 
+                    src="{{ app.pet_image }}" 
+                    alt="{{ app.pet_name }}" 
+                    style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px;"
+                    onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800'"
+                  >
+                  <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-dark);">
+                      ขอยื่นรับเลี้ยงน้อง: {{ app.pet_name }} ({{ app.pet_species }})
+                    </h3>
+                    <span style="font-size: 0.85rem; color: #64748b;">
+                      ผู้ยื่นคำขอ: <strong>{{ app.applicant_name }}</strong> | โทร: {{ app.phone }} | อีเมล: {{ app.email }}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <span class="status-badge" style="background: #e0f2fe; color: #0369a1;">
+                    {{ app.status }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body" style="padding: 1.5rem; font-size: 0.9rem; line-height: 1.7; color: #334155;">
+              <div class="grid-2" style="margin-bottom: 1rem;">
+                <div>
+                  <p><strong>ที่อยู่ปัจจุบัน:</strong> {{ app.address }} (รหัสไปรษณีย์: {{ app.postal_code }})</p>
+                  <p><strong>ช่องทางติดต่ออื่นๆ:</strong> {{ app.other_contacts or '-' }}</p>
+                  <p><strong>สนามบินนานาชาติที่ใกล้ที่สุด:</strong> {{ app.nearest_airport }}</p>
+                  <p><strong>อาชีพและชั่วโมงทำงาน:</strong> {{ app.job_and_hours }}</p>
+                </div>
+                <div>
+                  <p><strong>สมาชิกในครัวเรือน:</strong> {{ app.household_members }}</p>
+                  <p><strong>ข้อตกลงร่วมกันของคนในบ้าน:</strong> {{ app.household_agreement }}</p>
+                  <p><strong>สัตว์เลี้ยงอื่นที่มี:</strong> {{ app.other_pets or 'ไม่มี' }}</p>
+                  <p><strong>ลักษณะและสถานที่ตั้งของบ้าน:</strong> {{ app.house_description }}</p>
+                </div>
+              </div>
+
+              <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid var(--border-color);">
+                <strong>เหตุผลและความตั้งใจในการรับเลี้ยง:</strong><br>
+                {{ app.reason_and_about }}
+              </div>
+
+              <!-- อัปเดตสถานะขั้นตอนการรับเลี้ยง -->
+              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem; flex-wrap: wrap; gap: 1rem;">
+                <span style="font-size: 0.8rem; color: #94a3b8;">
+                  ยื่นแบบฟอร์มเมื่อ: {{ app.created_at }} (ยอมรับเงื่อนไขแล้ว)
+                </span>
+
+                <form method="POST" action="{{ url_for('admin.adoption_status_update', app_id=app.id) }}" style="display: flex; gap: 0.5rem; align-items: center;">
+                  <label style="font-weight: 600; font-size: 0.85rem;">เปลี่ยนสถานะ:</label>
+                  <select name="status" class="form-control" style="width: auto; padding: 0.35rem 0.75rem; font-size: 0.85rem;">
+                    <option value="รอการติดต่อสัมภาษณ์" {% if app.status == 'รอการติดต่อสัมภาษณ์' %}selected{% endif %}>1. รอการติดต่อสัมภาษณ์</option>
+                    <option value="ผ่านการสัมภาษณ์วิดีโอคอล" {% if app.status == 'ผ่านการสัมภาษณ์วิดีโอคอล' %}selected{% endif %}>2. ผ่านการสัมภาษณ์วิดีโอคอล</option>
+                    <option value="ผ่านการประเมินบ้าน" {% if app.status == 'ผ่านการประเมินบ้าน' %}selected{% endif %}>3. ผ่านการประเมินบ้าน</option>
+                    <option value="อนุมัติการรับเลี้ยงเรียบร้อย" {% if app.status == 'อนุมัติการรับเลี้ยงเรียบร้อย' %}selected{% endif %}>4. อนุมัติการรับเลี้ยงเรียบร้อย</option>
+                    <option value="ปฏิเสธคำขอรับเลี้ยง" {% if app.status == 'ปฏิเสธคำขอรับเลี้ยง' %}selected{% endif %}>5. ปฏิเสธคำขอรับเลี้ยง</option>
+                  </select>
+                  <button type="submit" class="btn btn-primary btn-sm">อัปเดต</button>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+          <span style="font-size: 3rem;">📭</span>
+          <p style="margin-top: 0.5rem; font-size: 1.05rem;">ยังไม่มีแบบฟอร์มขอรับเลี้ยงเข้ามาในขณะนี้</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

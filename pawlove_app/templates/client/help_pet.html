@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}ให้ความช่วยเหลือ - เพิ่มสัตว์ที่ต้องการหาบ้าน PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 820px; padding-top: 1.5rem; padding-bottom: 3.5rem;">
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <span style="background: rgba(249, 115, 22, 0.1); color: var(--primary); padding: 0.35rem 0.85rem; border-radius: 9999px; font-weight: 700; font-size: 0.85rem; display: inline-block; margin-bottom: 0.75rem;">
+      <i class="fa-solid fa-hand-holding-heart" style="margin-right: 0.35rem;"></i> ให้ความช่วยเหลือเพื่อนสี่ขา
+    </span>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-dark);">
+      เพิ่มสัตว์ที่ต้องการหาบ้าน
+    </h1>
+  </div>
+
+  <!-- การ์ดยืนยันข้อตกลงและเงื่อนไขก่อนกรอก (ข้อกำหนดที่ 3) -->
+  <div id="termsPromptCard" class="card" style="border-top: 5px solid var(--warning); margin-bottom: 2rem;">
+    <div class="card-body" style="padding: 2rem;">
+      <div style="display: flex; gap: 1rem; align-items: flex-start;">
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: #fef3c7; display: flex; align-items: center; justify-content: center; color: #b45309; font-size: 1.5rem; flex-shrink: 0;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: #92400e; margin-bottom: 0.5rem;">
+            ข้อตกลงและเงื่อนไขก่อนการส่งข้อมูลสัตว์ (โปรดยืนยันก่อนกรอกข้อมูล)
+          </h3>
+          <p style="color: #78350f; font-size: 0.95rem; line-height: 1.7; margin-bottom: 1rem;">
+            1. ข้อมูลสัตว์ที่ส่งต้องเป็นความจริง เพื่อสวัสดิภาพสูงสุดของสัตว์เลี้ยง<br>
+            2. ข้อมูลที่ส่งจะถูกส่งไปยัง <strong>ผู้ดูแลระบบ (Admin) เพื่อตรวจสอบและอนุมัติ</strong> ก่อนแสดงผลในหน้ารับเลี้ยง<br>
+            3. สัตว์ที่อยู่ในสถานะ "กำลังอยู่ระหว่างการรักษา" หรือ "รอรับการช่วยเหลือ" จะเปิดรับบริจาคได้เฉพาะตามเกณฑ์ของมูลนิธิ<br>
+            4. ผู้ส่งข้อมูลยินยอมให้ทีมงาน PawLove ติดต่อเพื่อขอข้อมูลเพิ่มเติมหรือสัมภาษณ์
+          </p>
+          <button type="button" class="btn btn-primary" onclick="acceptTermsAndProceed()">
+            <i class="fa-solid fa-check" style="margin-right: 0.35rem;"></i> ข้าพเจ้าอ่าน เข้าใจ และยอมรับข้อตกลง
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ฟอร์มกรอกข้อมูลสัตว์ (จะปรากฏขึ้นหลังกดยอมรับข้อตกลง) -->
+  <div id="petFormSection" class="card" style="display: none; border-top: 5px solid var(--primary);">
+    <div class="card-body" style="padding: 2.5rem 2rem;">
+      <form method="POST" action="{{ url_for('client.help_pet') }}" enctype="multipart/form-data">
+        <!-- ซ่อน Checkbox ยืนยันเงื่อนไข -->
+        <input type="checkbox" id="terms_confirmed" name="terms_confirmed" value="1" style="display: none;">
+
+        <!-- ชนิดสัตว์ & เพศ -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="species">ชนิดของสัตว์ *</label>
+            <select id="species" name="species" class="form-control" required>
+              <option value="สุนัข">สุนัข (Dog)</option>
+              <option value="แมว">แมว (Cat)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="gender">เพศ *</label>
+            <select id="gender" name="gender" class="form-control" required>
+              <option value="เพศผู้">เพศผู้</option>
+              <option value="เพศเมีย">เพศเมีย</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ชื่อสัตว์ & สายพันธุ์ -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="name">ชื่อของสัตว์ *</label>
+            <input type="text" id="name" name="name" class="form-control" placeholder="เช่น เจ้าถุงทอง" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="breed">สายพันธุ์ *</label>
+            <input type="text" id="breed" name="breed" class="form-control" placeholder="เช่น ไทยผสม, แมวไทยสลิด, ชิสุผสม" required>
+          </div>
+        </div>
+
+        <!-- อายุ (ปี และ เดือน) (ข้อกำหนดที่ 3) -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="age_years">อายุ (จำนวนปี) *</label>
+            <input type="number" id="age_years" name="age_years" class="form-control" min="0" max="30" value="1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="age_months">อายุ (จำนวนเดือน) *</label>
+            <input type="number" id="age_months" name="age_months" class="form-control" min="0" max="11" value="0" required>
+          </div>
+        </div>
+
+        <!-- ชื่อผู้ดูแลในปัจจุบัน & ที่อยู่ปัจจุบัน (ข้อกำหนดที่ 3) -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="caretaker_name">ชื่อผู้ดูแลในปัจจุบัน *</label>
+            <input type="text" id="caretaker_name" name="caretaker_name" class="form-control" placeholder="เช่น คุณวิภา (ผู้พบเห็น/ผู้ดูแล)" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="current_address">ที่อยู่ของสัตว์ในปัจจุบัน *</label>
+            <input type="text" id="current_address" name="current_address" class="form-control" placeholder="เช่น ชุมชนวัดสะพาน คลองเตย กรุงเทพฯ" required>
+          </div>
+        </div>
+
+        <!-- สถานะของสัตว์ปัจจุบัน (ข้อกำหนดที่ 3: มี 4 สถานะชัดเจน) -->
+        <div class="form-group">
+          <label class="form-label" for="status">สถานะของสัตว์ปัจจุบัน *</label>
+          <select id="status" name="status" class="form-control" onchange="toggleDonationTarget()" required>
+            <option value="กำลังหาบ้าน" selected>กำลังหาบ้าน</option>
+            <option value="กำลังอยู่ระหว่างการรักษา">กำลังอยู่ระหว่างการรักษา</option>
+            <option value="รอรับการช่วยเหลือ">รอรับการช่วยเหลือ</option>
+            <option value="หาบ้านได้แล้ว">หาบ้านได้แล้ว</option>
+          </select>
+          <small style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem; display: block;">
+            * หมายเหตุ: หากเลือกสถานะที่ "กำลังอยู่ระหว่างการรักษา" หรือ "รอรับการช่วยเหลือ" ระบบจะเปิดให้กำหนดยอดบริจาคสำหรับค่ารักษาพยาบาลสัตว์ตัวนี้ได้
+          </small>
+        </div>
+
+        <!-- ยอดบริจาคเป้าหมาย (สำหรับสถานะ อยู่ระหว่างการรักษา และ รอรับการช่วยเหลือ) -->
+        <div id="donationTargetGroup" class="form-group" style="display: none; background: #fff7ed; padding: 1.25rem; border-radius: 8px; border: 1.5px solid #fed7aa;">
+          <label class="form-label" for="donation_target" style="color: #9a3412; font-weight: 700;">
+            <i class="fa-solid fa-hand-holding-dollar" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> กำหนดยอดบริจาคที่ต้องการรับ (บาท) *
+          </label>
+          <input 
+            type="number" 
+            id="donation_target" 
+            name="donation_target" 
+            class="form-control" 
+            placeholder="เช่น 5000" 
+            min="0" 
+            step="100" 
+            value="5000"
+            style="background: white;"
+          >
+          <small style="color: #c2410c; font-size: 0.825rem; display: block; margin-top: 0.35rem;">
+            ระบุยอดเงินเป้าหมายที่ต้องการรับบริจาคสำหรับเคสการรักษาหรือการช่วยเหลือน้องตัวนี้
+          </small>
+        </div>
+
+        <!-- รูปภาพของสัตว์ (Choose File แทน URL) -->
+        <div class="form-group">
+          <label class="form-label" for="pet_image"><i class="fa-solid fa-image" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> รูปภาพของสัตว์ (Choose File - เลือกไฟล์จากเครื่อง) *</label>
+          <div style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 1.25rem; background: #f8fafc; text-align: center;">
+            <input 
+              type="file" 
+              id="pet_image" 
+              name="pet_image" 
+              class="form-control" 
+              accept="image/*, *" 
+              onchange="previewPetImage(this)"
+              style="margin-bottom: 0.5rem; cursor: pointer; background: white;"
+            >
+            <div style="font-size: 0.825rem; color: var(--text-muted);">
+              <i class="fa-solid fa-circle-info" style="margin-right: 0.25rem;"></i> เลือกไฟล์รูปภาพจากอุปกรณ์ของคุณ (รองรับไฟล์รูปภาพความละเอียดสูงทุกขนาดสูงสุด 100 MB และทุกนามสกุล)
+            </div>
+            <div id="selectedFileName" style="margin-top: 0.35rem; font-size: 0.85rem; font-weight: 600; color: var(--primary-orange);"></div>
+            <div id="imagePreviewContainer" style="margin-top: 1rem; display: none;">
+              <span style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 0.3rem;">ภาพตัวอย่างที่เลือก (ขนาดใหญ่):</span>
+              <img id="imagePreview" src="" alt="ภาพตัวอย่าง" style="max-width: 440px; max-height: 380px; width: 100%; object-fit: contain; border-radius: 8px; border: 2px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+            </div>
+          </div>
+        </div>
+
+        <!-- รายละเอียดของสัตว์ -->
+        <div class="form-group">
+          <label class="form-label" for="description">รายละเอียดของสัตว์ *</label>
+          <textarea id="description" name="description" class="form-control" placeholder="บรรยายลักษณะนิสัย ความเป็นมา สภาพร่างกาย นิสัยใจคอ..." required></textarea>
+        </div>
+
+        <!-- รายละเอียดของสัตว์เพิ่มเติม (ข้อกำหนดที่ 3) -->
+        <div class="form-group">
+          <label class="form-label" for="extra_details">รายละเอียดของสัตว์เพิ่มเติม</label>
+          <textarea id="extra_details" name="extra_details" class="form-control" placeholder="เช่น ประวัติวัคซีน อาหารที่ชอบ การขับถ่าย พฤติกรรมเมื่อเจอเด็กหรือสัตว์อื่น..."></textarea>
+        </div>
+
+        <div style="background: #f1f5f9; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.9rem; color: #475569;">
+          <i class="fa-solid fa-shield-halved" style="margin-right: 0.35rem; color: var(--primary);"></i> <strong>ขั้นตอนหลังจากส่งข้อมูล:</strong> ข้อมูลสัตว์จะถูกบันทึกเป็นคำขอ และส่งต่อไปยัง <strong>แอดมินเพื่อพิจารณาอนุมัติ</strong> ตามข้อกำหนดที่ 2 ก่อนเผยแพร่บนเว็บไซต์
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+          <i class="fa-solid fa-paper-plane" style="margin-right: 0.35rem;"></i> ส่งข้อมูลสัตว์ให้แอดมินอนุมัติ
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleDonationTarget() {
+  const statusSelect = document.getElementById('status');
+  const targetGroup = document.getElementById('donationTargetGroup');
+  if (!statusSelect || !targetGroup) return;
+  const val = statusSelect.value || '';
+  if (val.includes('รักษา') || val.includes('รอรับการช่วยเหลือ') || val.includes('รอ')) {
+    targetGroup.style.display = 'block';
+  } else {
+    targetGroup.style.display = 'none';
+  }
+}
+document.addEventListener('DOMContentLoaded', toggleDonationTarget);
+</script>
+{% endblock %}

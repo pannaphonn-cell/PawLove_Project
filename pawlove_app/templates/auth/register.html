@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}ลงทะเบียนสมัครสมาชิก - มูลนิธิ PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 620px; padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div class="card card-official" style="border-top: 4px solid var(--primary-orange);">
+    <div class="card-body" style="padding: 2.5rem 2rem;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PawLove Logo" style="height: 85px; width: auto; margin-bottom: 0.5rem;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: #1e2229; margin-top: 0.35rem; letter-spacing: -0.02em;">
+          ลงทะเบียนสมาชิก PawLove
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+          เข้าร่วมเป็นเครือข่ายผู้พิทักษ์และส่งต่อความรักแก่เพื่อนสี่ขา
+        </p>
+      </div>
+
+      <form method="POST" action="{{ url_for('auth.register') }}">
+        <!-- 1. ชื่อ-นามสกุล -->
+        <div class="form-group">
+          <label class="form-label" for="fullname">ชื่อ-นามสกุล (ตามบัตรประชาชน) *</label>
+          <input 
+            type="text" 
+            id="fullname" 
+            name="fullname" 
+            class="form-control" 
+            placeholder="เช่น สมชาย ใจดี" 
+            value="{{ fullname or '' }}" 
+            required
+            autofocus
+          >
+        </div>
+
+        <!-- 2. อีเมล (เอายืนยันอีเมลออกตามที่ผู้ใช้ร้องขอ) -->
+        <div class="form-group">
+          <label class="form-label" for="email">อีเมล (E-Mail Address) *</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            class="form-control" 
+            placeholder="example@mail.com" 
+            value="{{ email or '' }}" 
+            required
+          >
+        </div>
+
+        <!-- 3. รหัสผ่าน & ยืนยันรหัสผ่าน (มี พิมพ์ใหญ่ พิมพ์เล็ก ตัวเลข) -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="reg_password">รหัสผ่าน *</label>
+            <input 
+              type="password" 
+              id="reg_password" 
+              name="password" 
+              class="form-control" 
+              placeholder="••••••••" 
+              required
+            >
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg_confirm_password">ยืนยันรหัสผ่าน *</label>
+            <input 
+              type="password" 
+              id="reg_confirm_password" 
+              name="confirm_password" 
+              class="form-control" 
+              placeholder="ยืนยันรหัสผ่าน" 
+              required
+            >
+          </div>
+        </div>
+
+        <!-- กล่องแสดงเงื่อนไขรหัสผ่านทางการ (ข้อกำหนดที่ 7) -->
+        <div style="background: var(--slate-50); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.35rem; font-size: 0.85rem;">
+          <strong style="display: block; margin-bottom: 0.35rem; color: var(--navy-900);">เงื่อนไขความปลอดภัยของรหัสผ่าน:</strong>
+          <ul style="list-style: none; padding-left: 0; line-height: 1.7;">
+            <li id="rule_length" style="color: var(--slate-600);">• มีความยาวอย่างน้อย 6 ตัวอักษร</li>
+            <li id="rule_upper" style="color: var(--slate-600);">• มีตัวอักษรภาษาอังกฤษพิมพ์ใหญ่ (A-Z) อย่างน้อย 1 ตัว</li>
+            <li id="rule_lower" style="color: var(--slate-600);">• มีตัวอักษรภาษาอังกฤษพิมพ์เล็ก (a-z) อย่างน้อย 1 ตัว</li>
+            <li id="rule_number" style="color: var(--slate-600);">• มีตัวเลข (0-9) อย่างน้อย 1 ตัว</li>
+          </ul>
+        </div>
+
+
+        <!-- 5. นโยบายความเป็นส่วนตัว (ข้อกำหนดที่ 7) -->
+        <div class="form-check">
+          <input type="checkbox" id="privacy_policy" name="privacy_policy" required>
+          <label for="privacy_policy" style="font-size: 0.875rem; color: var(--slate-700); cursor: pointer; line-height: 1.5;">
+            ข้าพเจ้ายินยอมและยอมรับ <strong>นโยบายคุ้มครองข้อมูลส่วนบุคคล (PDPA Privacy Policy)</strong> ของมูลนิธิ PawLove
+          </label>
+        </div>
+
+        <!-- 6. เงื่อนไขต่างๆ (ข้อกำหนดที่ 7) -->
+        <div class="form-check">
+          <input type="checkbox" id="terms_accepted" name="terms_accepted" required>
+          <label for="terms_accepted" style="font-size: 0.875rem; color: var(--slate-700); cursor: pointer; line-height: 1.5;">
+            ข้าพเจ้ายอมรับ <strong>ข้อกำหนดและเงื่อนไขการใช้งานระบบสารสนเทศ (Terms & Conditions)</strong> ของมูลนิธิ
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-orange btn-lg" style="width: 100%; margin-top: 1.25rem; padding: 0.95rem; font-weight: 700; font-size: 1rem;">
+          ยืนยันการลงทะเบียนสมาชิก
+        </button>
+      </form>
+
+      <div style="margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border-light); text-align: center; font-size: 0.9rem;">
+        มีบัญชีผู้ใช้งานแล้ว? 
+        <a href="{{ url_for('auth.login') }}" style="color: var(--primary-orange); font-weight: 700; text-decoration: none;">
+          เข้าสู่ระบบที่นี่
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

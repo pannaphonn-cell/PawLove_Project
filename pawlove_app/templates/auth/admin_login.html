@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}เข้าสู่ระบบผู้ดูแลระบบ (Admin Authentication) - มูลนิธิ PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; padding-top: 3.5rem; padding-bottom: 4rem;">
+  <div class="card card-official" style="border-top: 4px solid var(--primary);">
+    <div class="card-body" style="padding: 2.5rem 2rem;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <div class="official-seal" style="width: 64px; height: 64px; margin: 0 auto 1rem; font-size: 1.85rem; display: flex; align-items: center; justify-content: center; background: #eff6ff; border-radius: 50%; border: 2px solid #bfdbfe; color: var(--primary);">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--navy-900); letter-spacing: -0.02em;">
+          ระบบจัดการสำหรับผู้ดูแลระบบ
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.35rem;">
+          PAWLOVE FOUNDATION ADMINISTRATION PORTAL
+        </p>
+      </div>
+
+      <form method="POST" action="{{ url_for('auth.admin_direct_access') }}">
+        <!-- 1. อีเมลแอดมิน -->
+        <div class="form-group">
+          <label class="form-label" for="admin_email">
+            อีเมลผู้ดูแลระบบ (Admin E-Mail) *
+          </label>
+          <input 
+            type="email" 
+            id="admin_email" 
+            name="admin_email" 
+            class="form-control" 
+            placeholder="admin@pawlove.org" 
+            value="{{ admin_email or 'admin@pawlove.org' }}"
+            required
+            autofocus
+          >
+        </div>
+
+        <!-- 2. รหัสผ่านแอดมิน (ตามที่ขอเพิ่มรหัสเข้าไปด้วย) -->
+        <div class="form-group">
+          <label class="form-label" for="admin_password">
+            รหัสผ่านผู้ดูแลระบบ (Admin Password) *
+          </label>
+          <input 
+            type="password" 
+            id="admin_password" 
+            name="admin_password" 
+            class="form-control" 
+            placeholder="••••••••" 
+            required
+          >
+          <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.4rem;">
+            * สำหรับเข้าทดสอบระบบ รหัสผ่านเริ่มต้นคือ: <code>Admin1234</code>
+          </small>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.25rem; padding: 0.85rem; font-weight: 700;">
+          <i class="fa-solid fa-lock" style="margin-right: 0.35rem;"></i> ยืนยันตัวตนเข้าสู่ระบบหลังบ้าน
+        </button>
+      </form>
+
+      <div style="margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color); text-align: center; font-size: 0.875rem;">
+        <a href="{{ url_for('client.index') }}" style="color: var(--text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">
+          <i class="fa-solid fa-arrow-left" style="margin-right: 0.35rem;"></i> กลับสู่หน้าหลักมูลนิธิ
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

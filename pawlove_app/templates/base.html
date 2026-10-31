@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}PawLove - เพราะทุกชีวิต มีคุณค่า{% endblock %}</title>
+  <!-- Google Fonts: Prompt -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <!-- Font Awesome 6 Free for Application Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- แถบด้านบนสำหรับผู้ดูแลระบบ (หากเข้าสู่ระบบในฐานะ Admin) -->
+  {% if session.get('user_role') == 'admin' %}
+  <div style="background: #1e222b; color: #cbd5e1; padding: 0.4rem 1.25rem; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span style="background: var(--primary-orange); color: white; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.7rem;">ADMIN</span>
+        <span>เข้าใช้งานในชื่อ: <strong>{{ session.get('user_name') }}</strong> ({{ session.get('user_email') }})</span>
+      </div>
+      <div style="display: flex; gap: 0.85rem; align-items: center;">
+        <a href="{{ url_for('admin.dashboard') }}" style="color: #f97316; text-decoration: none; font-weight: 600;"><i class="fa-solid fa-gear"></i> จัดการระบบหลังบ้าน</a>
+        <a href="{{ url_for('client.index') }}" style="color: #94a3b8; text-decoration: none;"><i class="fa-solid fa-globe"></i> มุมมองหน้าเว็บ</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- แถบนำทางหลักแบบกะทัดรัด (Compact Navbar สไตล์ PawCare) -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <!-- โลโก้โครงการ -->
+      <a href="{{ url_for('client.index') }}" class="brand-wrapper">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PawLove Logo" style="height: 46px; width: auto; object-fit: contain;">
+        <div class="brand-title">
+          PawLove <span>เพราะทุกชีวิต มีคุณค่า</span>
+        </div>
+      </a>
+
+      <!-- เมนูนำทาง-->
+      {% if session.get('user_role') == 'admin' %}
+        <!-- ==================== แถบเมนูแอดมิน (แก้ไขได้ทั้งหมด) ==================== -->
+        <ul class="nav-links">
+          <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link"><i class="fa-solid fa-chart-line"></i> แดชบอร์ด</a></li>
+          <li><a href="{{ url_for('admin.pets_list') }}" class="nav-link"><i class="fa-solid fa-paw"></i> จัดการสัตว์</a></li>
+          <li><a href="{{ url_for('admin.news_manage') }}" class="nav-link"><i class="fa-solid fa-newspaper"></i> ข่าวสาร</a></li>
+          <li><a href="{{ url_for('admin.donations_list') }}" class="nav-link"><i class="fa-solid fa-hand-holding-dollar"></i> บริจาค</a></li>
+          <li><a href="{{ url_for('admin.content_edit') }}" class="nav-link"><i class="fa-solid fa-pen-to-square"></i> จัดการเนื้อหา</a></li>
+          <li><a href="{{ url_for('admin.users_list') }}" class="nav-link"><i class="fa-solid fa-users"></i> ผู้ใช้งาน</a></li>
+          <li>
+            <a href="{{ url_for('admin.requests_list') }}" class="nav-link">
+              <i class="fa-solid fa-inbox"></i> คำขอ
+              {% if pending_requests_count > 0 %}
+              <span class="nav-badge">{{ pending_requests_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          <li><a href="{{ url_for('admin.adoptions_list') }}" class="nav-link"><i class="fa-solid fa-file-signature"></i> รับเลี้ยง</a></li>
+        </ul>
+      {% else %}
+        <!-- ==================== แถบเมนูของผู้ใช้ (ตามข้อกำหนดที่ 4) ==================== -->
+        <ul class="nav-links">
+          <li><a href="{{ url_for('client.index') }}" class="nav-link">หน้าแรก</a></li>
+          <li><a href="{{ url_for('client.about') }}" class="nav-link">เกี่ยวกับเรา</a></li>
+          <li><a href="{{ url_for('client.adopt') }}" class="nav-link">รับเลี้ยง</a></li>
+          <li><a href="{{ url_for('client.help_pet') }}" class="nav-link">ช่วยเหลือสัตว์</a></li>
+          <li><a href="{{ url_for('client.donate') }}" class="nav-link">บริจาค</a></li>
+          <li><a href="{{ url_for('client.contact') }}" class="nav-link">ติดต่อเรา</a></li>
+          <li>
+            <a href="{{ url_for('client.notifications') }}" class="nav-link">
+              ข่าวสาร
+              {% if user_notifs_count > 0 %}
+              <span class="nav-badge">{{ user_notifs_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+        </ul>
+      {% endif %}
+
+      <!-- ส่วนจัดการบัญชี เข้าสู่ระบบ / สมัครสมาชิก / ล็อกอินแอดมิน -->
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <!-- ปุ่มค้นหา -->
+        <a href="{{ url_for('client.adopt') }}" class="btn-icon-action" title="ค้นหาสัตว์" style="border: none; background: transparent; font-size: 0.95rem; color: #475569;">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </a>
+
+        {% if session.get('user_id') %}
+          {% if session.get('user_role') != 'admin' %}
+          <a href="{{ url_for('client.my_pets') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-paw"></i> สัตว์ของฉัน</a>
+          {% endif %}
+          <span style="font-size: 0.85rem; font-weight: 600; color: #1e2229; padding: 0.2rem 0.4rem;">
+            {{ session.get('user_name') }}
+          </span>
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: #fecaca;">
+            ออก
+          </a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-sm" style="border: none; background: transparent;">
+            เข้าสู่ระบบ
+          </a>
+          <a href="{{ url_for('auth.register') }}" class="btn btn-orange btn-sm">
+            สมัครสมาชิก
+          </a>
+          <a href="{{ url_for('auth.admin_direct_access') }}" class="btn btn-outline btn-sm" style="color: #64748b;" title="เข้าสู่ระบบผู้ดูแลระบบ">
+            <i class="fa-solid fa-shield-halved"></i> แอดมิน
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- แสดงข้อความแจ้งเตือน Flash Messages -->
+  <div class="flash-messages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 1.15rem; cursor: pointer; color: inherit;">&times;</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- เนื้อหาหลักแต่ละหน้า -->
+  <main class="content-wrapper">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ส่วนท้ายหน้าเว็บ-->
+  <footer>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0;">
+      <div class="grid-4" style="margin-bottom: 2rem;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <span style="font-size: 1.4rem; color: var(--primary-orange);"><i class="fa-solid fa-paw"></i></span>
+            <strong style="font-size: 1.15rem; color: #1e2229;">PawLove</strong>
+          </div>
+          <p style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 0.75rem;">
+            แพลตฟอร์มช่วยเหลือสัตว์จรจัดและสัตว์ที่ต้องการความช่วยเหลือ มุ่งเน้นการรักษา ทำหมัน และหาบ้านใหม่ที่อบอุ่น
+          </p>
+          <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 2;">
+            <div><i class="fa-solid fa-location-dot" style="color: var(--primary-orange); width: 18px;"></i> เลขที่ 123 หมู่ 4 ต.สุเทพ อ.เมือง จ.เชียงใหม่ 50200</div>
+            <div><i class="fa-solid fa-phone" style="color: #22c55e; width: 18px;"></i> 081-234-5678</div>
+            <div><i class="fa-solid fa-envelope" style="color: #0284c7; width: 18px;"></i> contact@pawlove.org</div>
+          </div>
+          <div style="display: flex; gap: 0.6rem; margin-top: 0.75rem;">
+            <a href="https://facebook.com" target="_blank" style="width: 28px; height: 28px; border-radius: 50%; background: #1877f2; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; text-decoration: none;" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="https://instagram.com" target="_blank" style="width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; text-decoration: none;" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://tiktok.com" target="_blank" style="width: 28px; height: 28px; border-radius: 50%; background: #000; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; text-decoration: none;" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+            <a href="https://line.me" target="_blank" style="width: 28px; height: 28px; border-radius: 50%; background: #06c755; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; text-decoration: none;" title="LINE"><i class="fa-brands fa-line"></i></a>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e2229; margin-bottom: 1rem;">เมนูหลัก</h4>
+          <ul style="list-style: none; font-size: 0.85rem; line-height: 2.2;">
+            <li><a href="{{ url_for('client.index') }}">หน้าแรก</a></li>
+            <li><a href="{{ url_for('client.about') }}">เกี่ยวกับเรา</a></li>
+            <li><a href="{{ url_for('client.help_pet') }}">ช่วยเหลือสัตว์</a></li>
+            <li><a href="{{ url_for('client.donate') }}">ร่วมบริจาค</a></li>
+            <li><a href="{{ url_for('client.adopt') }}">รับเลี้ยงสุนัขและแมว</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e2229; margin-bottom: 1rem;">นโยบายและความปลอดภัย</h4>
+          <ul style="list-style: none; font-size: 0.85rem; line-height: 2.2;">
+            <li><a href="#">นโยบายความเป็นส่วนตัว</a></li>
+            <li><a href="#">การรักษาข้อมูลส่วนบุคคล</a></li>
+            <li><a href="#">เงื่อนไขการใช้งาน</a></li>
+            <li><a href="{{ url_for('client.contact') }}">ติดต่อเรา</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e2229; margin-bottom: 1rem;">ระบบเจ้าหน้าที่</h4>
+          <p style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 0.85rem;">
+            เข้าถึงระบบหลังบ้านสำหรับผู้ดูแลระบบมูลนิธิ
+          </p>
+          <a href="{{ url_for('auth.admin_direct_access') }}" class="btn btn-outline btn-sm" style="width: 100%; justify-content: center; gap: 0.4rem;">
+            <i class="fa-solid fa-shield-halved"></i> เข้าสู่ระบบแอดมิน
+          </a>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border-light); padding-top: 1.25rem; text-align: center; font-size: 0.8rem; color: var(--text-light);">
+        &copy; 2026 PawLove Foundation. All rights reserved. เพราะทุกชีวิต มีคุณค่า
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

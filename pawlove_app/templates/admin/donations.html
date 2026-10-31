@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}ประวัติการบริจาคและตรวจสอบหลักฐานการโอนเงิน - PawLove Admin{% endblock %}
+
+{% block content %}
+<div class="admin-layout-wrapper">
+  <!-- Sidebar ด้านซ้าย -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-brand" style="display: flex; align-items: center; gap: 0.6rem;">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PawLove Logo" style="height: 38px; width: auto; object-fit: contain;">
+      <span>PawLove Admin</span>
+    </div>
+    <ul class="admin-sidebar-menu">
+      <li class="admin-menu-item"><a href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-chart-line"></i> แดชบอร์ด</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.pets_list') }}"><i class="fa-solid fa-paw"></i> จัดการน้องหมา/แมว</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.news_manage') }}"><i class="fa-solid fa-newspaper"></i> จัดการข่าวสาร</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.users_list') }}"><i class="fa-solid fa-users"></i> จัดการผู้ใช้</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.requests_list') }}"><i class="fa-solid fa-inbox"></i> คำขอจากผู้ใช้</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.adoptions_list') }}"><i class="fa-solid fa-file-signature"></i> คำขอรับเลี้ยง</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.quotes_list') }}"><i class="fa-solid fa-images"></i> คำคม & แบนเนอร์สไลด์</a></li>
+      <li class="admin-menu-item active"><a href="{{ url_for('admin.donations_list') }}"><i class="fa-solid fa-hand-holding-dollar"></i> ประวัติบริจาค & หลักฐานการโอนเงิน</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.content_edit') }}"><i class="fa-solid fa-pen-to-square"></i> จัดการเนื้อหาเว็บ</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('client.index') }}"><i class="fa-solid fa-globe"></i> กลับสู่หน้าเว็บ</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content Area ด้านขวา -->
+  <main class="admin-content-area">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h1 style="font-size: 1.5rem; font-weight: 800; color: #1e2229;">
+          <i class="fa-solid fa-receipt" style="color: var(--primary-orange); margin-right: 0.4rem;"></i> ประวัติการบริจาคและตรวจสอบหลักฐานโอนเงิน
+        </h1>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          ตรวจสอบรายการบริจาค ยอดเงิน และภาพหลักฐานหลักฐานการโอนเงินจริงผ่านระบบ Thai QR / PromptPay
+        </p>
+      </div>
+
+      <div style="background: white; padding: 0.75rem 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); display: flex; gap: 1.5rem;">
+        <div>
+          <span style="font-size: 0.75rem; color: var(--text-light); display: block;">ยอดเงินบริจาครวม</span>
+          <strong style="font-size: 1.25rem; color: var(--primary-orange);">฿ {{ "{:,.2f}".format(stats.total_sum or 0) }}</strong>
+        </div>
+        <div style="border-left: 1px solid var(--border-light); padding-left: 1.5rem;">
+          <span style="font-size: 0.75rem; color: var(--text-light); display: block;">จำนวนรายการ</span>
+          <strong style="font-size: 1.25rem; color: #1e2229;">{{ stats.total_count or 0 }} รายการ</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- แถบข้อมูลบัญชีปลายทางโครงการสำหรับแอดมินใช้เทียบเคียงสลีป -->
+    <div class="card" style="margin-bottom: 1.5rem; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem 1.25rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; color: #166534;">
+          <i class="fa-solid fa-shield-halved" style="font-size: 1.25rem;"></i>
+          <span>
+            <strong>ข้อมูลบัญชีปลายทางของโครงการสำหรับเทียบหลักฐานการโอนเงิน:</strong> 
+            ชื่อบัญชี: <strong>น.ส. ปัณณพร เนืองทอง</strong> | พร้อมเพย์: <strong>004-999-171-860413</strong> (หรือลงท้าย 0413)
+          </span>
+        </div>
+        <span style="font-size: 0.8rem; color: #15803d; background: #dcfce7; padding: 0.2rem 0.65rem; border-radius: 4px; font-weight: 600;">
+          <i class="fa-solid fa-circle-check"></i> หากชื่อและยอดตรง สามารถกดอนุมัติหลักฐานการโอนเงินได้ทันที
+        </span>
+      </div>
+    </div>
+
+    <!-- ตารางรายการการบริจาค -->
+    <div class="card">
+      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: #1e2229;">
+          รายการบริจาคทั้งหมด ({{ donations|length }} รายการ)
+        </h3>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">เรียงจากล่าสุด</span>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.885rem;">
+            <thead>
+              <tr style="background: #fafbfc; border-bottom: 1.5px solid var(--border-light); text-align: left;">
+                <th style="padding: 0.85rem 1rem;">วัน-เวลา</th>
+                <th style="padding: 0.85rem 1rem;">ผู้บริจาค</th>
+                <th style="padding: 0.85rem 1rem;">ช่วยเหลือน้อง</th>
+                <th style="padding: 0.85rem 1rem;">ยอดเงิน</th>
+                <th style="padding: 0.85rem 1rem; text-align: center;">หลักฐานการโอนเงิน</th>
+                <th style="padding: 0.85rem 1rem;">สถานะการตรวจสอบ</th>
+                <th style="padding: 0.85rem 1rem;">เลขอ้างอิง</th>
+                <th style="padding: 0.85rem 1rem; text-align: center;">การตรวจสอบโดยแอดมิน</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if donations %}
+                {% for d in donations %}
+                <tr style="border-bottom: 1px solid var(--border-light);">
+                  <td style="padding: 0.85rem 1rem; color: var(--text-light); white-space: nowrap; font-size: 0.8rem;">
+                    {{ d.created_at }}
+                  </td>
+                  <td style="padding: 0.85rem 1rem;">
+                    <strong>{{ d.donor_name }}</strong>
+                    {% if d.message %}
+                    <div style="font-size: 0.775rem; color: var(--text-muted); margin-top: 0.2rem;">"{{ d.message }}"</div>
+                    {% endif %}
+                  </td>
+                  <td style="padding: 0.85rem 1rem;">
+                    {% if d.pet_name %}
+                      <span class="pill-badge pill-orange" style="font-size: 0.75rem;">
+                        <i class="fa-solid fa-paw"></i> {{ d.pet_name }}
+                      </span>
+                    {% else %}
+                      <span class="pill-badge pill-purple" style="font-size: 0.75rem;">
+                        กองทุนกลาง
+                      </span>
+                    {% endif %}
+                  </td>
+                  <td style="padding: 0.85rem 1rem; font-weight: 700; color: #166534; font-size: 0.95rem; white-space: nowrap;">
+                    ฿ {{ "{:,.2f}".format(d.amount) }}
+                  </td>
+                  <td style="padding: 0.85rem 1rem; text-align: center;">
+                    {% if d.slip_url %}
+                    <a href="{{ d.slip_url }}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none; font-size: 0.8rem; color: var(--primary-orange); font-weight: 600; background: #fff7ed; padding: 0.35rem 0.65rem; border-radius: 4px; border: 1px solid #ffedd5;">
+                      <i class="fa-solid fa-file-invoice-dollar"></i> ดูหลักฐานการโอนเงิน
+                    </a>
+                    {% else %}
+                    <span style="font-size: 0.775rem; color: var(--text-light);">-</span>
+                    {% endif %}
+                  </td>
+                  <td style="padding: 0.85rem 1rem;">
+                    {% if d.is_verified == 1 %}
+                    <span class="pill-badge pill-green" style="font-size: 0.75rem;" title="{{ d.verification_info }}">
+                      <i class="fa-solid fa-circle-check"></i> ตรวจสอบผ่านแล้ว
+                    </span>
+                    {% else %}
+                    <span class="pill-badge pill-yellow" style="font-size: 0.75rem;">
+                      <i class="fa-solid fa-clock"></i> รอตรวจสอบ
+                    </span>
+                    {% endif %}
+                    {% if d.verification_info %}
+                    <div style="font-size: 0.725rem; color: var(--text-muted); margin-top: 0.2rem; max-width: 220px;">
+                      {{ d.verification_info }}
+                    </div>
+                    {% endif %}
+                  </td>
+                  <td style="padding: 0.85rem 1rem; font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">
+                    {{ d.transfer_ref or '-' }}
+                  </td>
+                  <td style="padding: 0.85rem 1rem; text-align: center; white-space: nowrap;">
+                    {% if d.is_verified == 1 %}
+                    <form method="POST" action="{{ url_for('admin.donation_verify', donation_id=d.id) }}" style="display: inline;">
+                      <input type="hidden" name="action" value="unverify">
+                      <button type="submit" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.55rem; color: #64748b;" title="ยกเลิกการยืนยัน">
+                        <i class="fa-solid fa-rotate-left"></i> ปลดสถานะ
+                      </button>
+                    </form>
+                    {% else %}
+                    <form method="POST" action="{{ url_for('admin.donation_verify', donation_id=d.id) }}" style="display: inline;">
+                      <input type="hidden" name="action" value="verify">
+                      <button type="submit" class="btn btn-orange btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;" title="อนุมัติหลักฐานการโอนเงิน">
+                        <i class="fa-solid fa-check"></i> อนุมัติหลักฐานการโอนเงิน
+                      </button>
+                    </form>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                    ยังไม่มีข้อมูลประวัติการบริจาคในระบบ
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

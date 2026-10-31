@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}{{ pet.name }} ({{ pet.species }}) - รายละเอียดและการรักษา PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; padding-top: 1rem; padding-bottom: 3.5rem;">
+  <!-- Breadcrumb -->
+  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+    <a href="{{ url_for('client.index') }}" style="color: inherit; text-decoration: none;">หน้าแรก</a> &gt; 
+    <a href="{{ url_for('client.adopt', species=pet.species) }}" style="color: inherit; text-decoration: none;">{{ pet.species }}</a> &gt; 
+    <span style="color: var(--primary-orange); font-weight: 600;">น้อง{{ pet.name }}</span>
+  </div>
+
+  <div class="card" style="margin-bottom: 2.5rem; padding: 2rem;">
+    <div style="display: grid; grid-template-columns: 1.15fr 1.25fr; gap: 2rem;">
+      <!-- แกลเลอรีรูปภาพ (สไตล์ PawCare ในรูป) -->
+      <div>
+        <div style="width: 100%; height: 440px; border-radius: var(--radius-md); overflow: hidden; margin-bottom: 0.75rem; background: #f1f3f5; box-shadow: 0 4px 14px rgba(0,0,0,0.06); border: 1px solid var(--border-light);">
+          <img 
+            id="mainPetImage"
+            src="{{ pet.image_url }}" 
+            alt="{{ pet.name }}" 
+            style="width: 100%; height: 100%; object-fit: cover;"
+            onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800'"
+          >
+        </div>
+        <!-- Thumbnails เล็กๆ -->
+        <div style="display: flex; gap: 0.5rem;">
+          <img src="{{ pet.image_url }}" style="width: 70px; height: 60px; object-fit: cover; border-radius: var(--radius-sm); border: 2px solid var(--primary-orange); cursor: pointer;" onclick="document.getElementById('mainPetImage').src=this.src">
+          <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?w=300" style="width: 70px; height: 60px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); cursor: pointer;" onclick="document.getElementById('mainPetImage').src=this.src">
+          <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=300" style="width: 70px; height: 60px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); cursor: pointer;" onclick="document.getElementById('mainPetImage').src=this.src">
+        </div>
+      </div>
+
+      <!-- ข้อมูลน้อง -->
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: #1e2229;">
+            น้อง{{ pet.name }}
+          </h1>
+          {% if 'รักษา' in pet.status %}
+            <span class="pill-badge pill-orange">กำลังรักษา</span>
+          {% elif 'รอ' in pet.status %}
+            <span class="pill-badge pill-yellow">รอช่วยเหลือ</span>
+          {% elif 'กำลังหาบ้าน' in pet.status or 'สุขภาพดี' in pet.status %}
+            <span class="pill-badge pill-green">กำลังหาบ้าน</span>
+          {% elif 'หาบ้านได้แล้ว' in pet.status %}
+            <span class="pill-badge pill-purple">หาบ้านได้แล้ว</span>
+          {% else %}
+            <span class="pill-badge pill-green">กำลังหาบ้าน</span>
+          {% endif %}
+        </div>
+
+        <div style="font-size: 0.885rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 1.25rem;">
+          <p><i class="fa-regular fa-clock" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> <strong>อายุ:</strong> {{ pet.age_years }} ปี {{ pet.age_months }} เดือน</p>
+          <p><i class="fa-solid fa-venus-mars" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> <strong>เพศ:</strong> {{ pet.gender }}</p>
+          <p><i class="fa-solid fa-paw" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> <strong>สายพันธุ์:</strong> {{ pet.breed }}</p>
+          <p><i class="fa-solid fa-user" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> <strong>ผู้ดูแลปัจจุบัน:</strong> {{ pet.caretaker_name }}</p>
+          <p><i class="fa-solid fa-location-dot" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> <strong>พิกัดปัจจุบัน:</strong> {{ pet.current_address }}</p>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e2229; margin-bottom: 0.35rem;">เรื่องราวของน้อง:</h4>
+          <p style="font-size: 0.885rem; color: var(--text-muted); line-height: 1.65;">
+            {{ pet.description }}
+          </p>
+        </div>
+
+        <!-- กล่องยอดเงินค่ารักษาพยาบาล (แสดงเฉพาะสถานะกำลังรักษา หรือ รอรับการช่วยเหลือ เท่านั้น ตามข้อกำหนด) -->
+        {% if 'รักษา' in pet.status or 'รอ' in pet.status %}
+        <div style="background: var(--bg-body); padding: 1rem 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); margin-bottom: 1.25rem;">
+          <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">
+            ค่ารักษาพยาบาลและการช่วยเหลือ
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-light);">เป้าหมาย</span><br>
+              <strong style="color: #1e2229; font-size: 1.05rem;">฿ {{ "{:,.0f}".format(target_amount) }}</strong>
+            </div>
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-light);">ได้รับแล้ว</span><br>
+              <strong style="color: var(--primary-orange); font-size: 1.05rem;">฿ {{ "{:,.0f}".format(received_amount) }}</strong>
+            </div>
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-light);">ยังขาดอีก</span><br>
+              <strong style="color: #ef4444; font-size: 1.05rem;">฿ {{ "{:,.0f}".format(remaining_amount) }}</strong>
+            </div>
+          </div>
+          <div class="progress-track" style="height: 8px;">
+            <div class="progress-fill" style="width: {{ progress_percent }}%;"></div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- ปุ่มดำเนินการ -->
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          {% if 'รักษา' in pet.status or 'รอรับการช่วยเหลือ' in pet.status %}
+          <a href="{{ url_for('client.donate', pet_id=pet.id) }}" class="btn btn-orange" style="width: 100%; padding: 0.75rem; font-size: 0.95rem;">
+            บริจาคช่วยน้อง{{ pet.name }}
+          </a>
+          {% endif %}
+
+          {% if 'หาบ้านได้แล้ว' not in pet.status %}
+          <div style="background: #fff8f5; border: 1px solid #ffd8c7; border-radius: var(--radius-sm); padding: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+            <div>
+              <strong style="font-size: 0.885rem; color: #1e2229; display: block;">ข้อมูลการรับเลี้ยง</strong>
+              <span style="font-size: 0.775rem; color: var(--text-muted);">น้องพร้อมย้ายเข้าสู่บ้านที่อบอุ่นและมีรั้วรอบขอบชิด</span>
+            </div>
+            <a href="{{ url_for('client.adopt_application', pet_id=pet.id) }}" class="btn btn-orange btn-sm" style="white-space: nowrap;">
+              สมัครรับเลี้ยง <i class="fa-solid fa-paw" style="margin-left: 0.25rem;"></i>
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- แถบไทม์ไลน์สถานะของสัตว์ (Timeline Component ตามข้อกำหนดใหม่) -->
+  <div class="card" style="padding: 2rem; margin-top: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-light); margin-bottom: 1.5rem; padding-bottom: 0.75rem; flex-wrap: wrap; gap: 0.75rem;">
+      <div>
+        <h3 style="font-size: 1.2rem; font-weight: 800; color: #1e2229; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fa-solid fa-location-dot" style="color: var(--primary-orange);"></i> ไทม์ไลน์สถานะปัจจุบัน: <span style="color: var(--primary-orange);">{{ timeline_info.title }}</span>
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+          {{ timeline_info.description }}
+        </p>
+      </div>
+      <span class="pill-badge {{ timeline_info.badge_class }}" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">
+        {{ pet.status }}
+      </span>
+    </div>
+
+    {% if timeline_info.has_substeps %}
+      <!-- 5-Step Visual Timeline Stepper -->
+      {% set current_step = pet.current_step or 1 %}
+      {% set step_progress = ((current_step - 1) / 4) * 100 %}
+      <div style="background: #fafaf9; border: 1px solid var(--border-light); border-radius: 12px; padding: 1.5rem 1rem; margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0 0.5rem;">
+          <strong style="font-size: 0.95rem; color: #1e2229;">ความคืบหน้าของขั้นตอน (Timeline Progress)</strong>
+          <span style="font-size: 0.825rem; font-weight: 700; color: var(--primary-orange);">
+            ขั้นตอนที่ {{ current_step }} จาก 5
+          </span>
+        </div>
+
+        <div class="timeline-stepper">
+          <!-- Background Line -->
+          <div class="stepper-bg-line"></div>
+          <!-- Dynamic Progress Fill -->
+          <div class="stepper-progress-fill" data-progress="{{ step_progress }}"></div>
+
+          {% for s in timeline_info.steps %}
+            {% set step_num = s.step %}
+            <div class="stepper-node {% if current_step > step_num %}completed{% elif current_step == step_num %}active{% else %}pending{% endif %}">
+              <div class="stepper-circle">
+                {% if current_step > step_num %}
+                  <i class="fa-solid fa-check"></i>
+                {% else %}
+                  {{ step_num }}
+                {% endif %}
+              </div>
+              <div class="stepper-label">
+                {{ s.title }}
+              </div>
+              {% if current_step == step_num %}
+                <span class="stepper-badge-active">ขั้นตอนปัจจุบัน</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <script>
+          document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.stepper-progress-fill').forEach(function (el) {
+              const progress = Number(el.dataset.progress || 0);
+              if (!Number.isNaN(progress)) {
+                el.style.width = progress + '%';
+              }
+            });
+          });
+        </script>
+
+        {% if timeline_info.note %}
+        <div style="background: #fff8f5; border-left: 4px solid var(--primary-orange); padding: 0.65rem 1rem; border-radius: 4px; font-size: 0.825rem; color: #7c2d12; margin-top: 1rem;">
+          <i class="fa-solid fa-circle-info" style="margin-right: 0.35rem;"></i> <strong>หมายเหตุ:</strong> {{ timeline_info.note }}
+        </div>
+        {% endif %}
+      </div>
+    {% else %}
+      <!-- สถานะ 1: กำลังหาบ้าน (สถานะหลัก ไม่ต้องแสดงขั้นตอนย่อย) -->
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div style="flex: 1; min-width: 280px;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+            <div style="width: 36px; height: 36px; background: rgba(22,101,52,0.1); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #166534;"><i class="fa-solid fa-house-chimney"></i></div>
+            <strong style="color: #166534; font-size: 1.05rem;">น้องพร้อมสำหรับการหาครอบครัวใหม่</strong>
+          </div>
+          <p style="color: #15803d; font-size: 0.885rem; line-height: 1.6; margin-bottom: 0;">
+            น้องมีสุขภาพแข็งแรงสมบูรณ์ พร้อมสำหรับการเปิดรับครอบครัวใหม่ทันที โดยแสดงข้อมูลประวัติและรูปภาพครบถ้วน เพื่อให้ผู้ที่สนใจสามารถติดต่อขอรับเลี้ยงได้ทันที (ไม่ต้องผ่านขั้นตอนย่อย)
+          </p>
+        </div>
+        {% if 'หาบ้านได้แล้ว' not in pet.status %}
+        <a href="{{ url_for('client.adopt_application', pet_id=pet.id) }}" class="btn btn-orange" style="padding: 0.75rem 1.5rem; font-weight: 700; white-space: nowrap;">
+          ยื่นขอรับเลี้ยงน้องทันที <i class="fa-solid fa-paw" style="margin-left: 0.25rem;"></i>
+        </a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <!-- บันทึกประวัติการอัปเดตและเหตุการณ์ย้อนหลัง (History Logs) -->
+    <div>
+      <h4 style="font-size: 1rem; font-weight: 700; color: #1e2229; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.4rem;">
+        <i class="fa-regular fa-clock" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> ประวัติบันทึกการอัปเดต (Status Update History)
+      </h4>
+
+      {% if updates %}
+        <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+          {% for u in updates %}
+          <div style="display: flex; gap: 1.25rem; padding: 1rem; background: var(--bg-body); border-radius: var(--radius-sm); border: 1px solid var(--border-light); align-items: flex-start;">
+            <div style="font-size: 0.825rem; font-weight: 700; color: var(--primary-orange); white-space: nowrap; min-width: 130px; background: white; padding: 0.35rem 0.65rem; border-radius: 6px; border: 1px solid var(--border-light); text-align: center;">
+              <i class="fa-regular fa-clock" style="margin-right: 0.25rem;"></i> {{ u.updated_at }}
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
+                <span class="pill-badge pill-orange" style="font-size: 0.75rem;">{{ u.status }}</span>
+                <span style="font-size: 0.785rem; color: var(--text-light);">บันทึกโดย: {{ u.updated_by }}</span>
+              </div>
+              <p style="font-size: 0.885rem; color: #334155; line-height: 1.6; margin: 0;">
+                {{ u.details }}
+              </p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="text-align: center; color: var(--text-muted); padding: 1.75rem; background: var(--bg-body); border-radius: 8px;">
+          ยังไม่มีบันทึกประวัติการอัปเดตเพิ่มเติมสำหรับน้องตัวนี้
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

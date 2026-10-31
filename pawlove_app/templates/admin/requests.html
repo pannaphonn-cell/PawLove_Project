@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}แจ้งเตือนคำขอจากผู้ใช้ (อนุมัติ/ปฏิเสธ) - ผู้ดูแลระบบ PawLove{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div style="margin-bottom: 2rem;">
+    <span class="admin-menu-badge">🔔 ข้อกำหนดที่ 2 & 5 (เมนูที่ 10)</span>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-dark); margin-top: 0.3rem;">
+      แจ้งเตือนคำขอจากผู้ใช้ (User Requests)
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      (ข้อกำหนดที่ 2: ต้องมีคำขอการเพิ่มสัตว์จากผู้ใช้ไปให้แอดมินอนุมัติก่อน รวมถึงการแก้ไขข้อมูลจากผู้ใช้ก็ต้องให้แอดมินอนุมัติ)
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding: 1.5rem;">
+      {% if requests %}
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          {% for r in requests %}
+          <div class="card" style="border-left: 6px solid {% if r.status == 'pending' %}var(--warning){% elif r.status == 'approved' %}var(--success){% else %}var(--danger){% endif %};">
+            <div class="card-body" style="padding: 1.5rem;">
+              <!-- ส่วนหัวของคำขอ -->
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;">
+                    <span class="status-badge" style="background: {% if r.request_type == 'add' %}#e0f2fe; color: #0369a1;{% else %}#f3e8ff; color: #6b21a8;{% endif %}">
+                      {{ '➕ คำขอเพิ่มสัตว์ใหม่' if r.request_type == 'add' else '✏️ คำขอแก้ไขข้อมูลสัตว์' }}
+                    </span>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-dark);">
+                      น้อง: {{ r.data.get('name', 'ไม่ระบุชื่อ') }} ({{ r.data.get('species') }})
+                    </h3>
+                  </div>
+                  <p style="font-size: 0.85rem; color: #64748b;">
+                    ยื่นคำขอโดย: <strong>{{ r.user_fullname }}</strong> ({{ r.user_email }}) | เมื่อวันที่: {{ r.created_at }}
+                  </p>
+                </div>
+
+                <div>
+                  {% if r.status == 'pending' %}
+                    <span class="status-badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a;">
+                      ⏳ รอการพิจารณาอนุมัติ
+                    </span>
+                  {% elif r.status == 'approved' %}
+                    <span class="status-badge" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac;">
+                      ✅ อนุมัติแล้ว
+                    </span>
+                  {% else %}
+                    <span class="status-badge" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;">
+                      ❌ ปฏิเสธคำขอ
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- รายละเอียดข้อมูลที่ส่งมา -->
+              <div style="display: flex; gap: 1.5rem; background: #fafafa; padding: 1.25rem; border-radius: 8px; margin-bottom: 1.25rem; flex-wrap: wrap;">
+                {% if r.data.get('image_url') %}
+                <img 
+                  src="{{ r.data.get('image_url') }}" 
+                  alt="{{ r.data.get('name') }}" 
+                  style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0;"
+                  onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800'"
+                >
+                {% endif %}
+
+                <div style="flex: 1; font-size: 0.9rem; line-height: 1.7; color: #334155;">
+                  <p><strong>สายพันธุ์:</strong> {{ r.data.get('breed') }} | <strong>เพศ:</strong> {{ r.data.get('gender') }} | <strong>อายุ:</strong> {{ r.data.get('age_years') }} ปี {{ r.data.get('age_months') }} เดือน</p>
+                  <p><strong>สถานะที่ขอ:</strong> <span style="color: var(--primary); font-weight: 600;">{{ r.data.get('status') }}</span></p>
+                  <p><strong>ผู้ดูแลปัจจุบัน:</strong> {{ r.data.get('caretaker_name') }} | <strong>ที่อยู่:</strong> {{ r.data.get('current_address') }}</p>
+                  <p><strong>รายละเอียด:</strong> {{ r.data.get('description') }}</p>
+                  {% if r.data.get('extra_details') %}
+                  <p><strong>ข้อมูลเพิ่มเติม:</strong> {{ r.data.get('extra_details') }}</p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- หากเป็นคำขอแก้ไข และมีข้อมูลเดิม ให้แสดงเปรียบเทียบ -->
+              {% if r.request_type == 'edit' and r.original_pet %}
+              <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 0.85rem; border-radius: 6px; margin-bottom: 1.25rem; font-size: 0.85rem; color: #78350f;">
+                <strong>ข้อมูลเดิมในระบบ:</strong> 
+                ชื่อ: {{ r.original_pet.name }} | สถานะเดิม: {{ r.original_pet.status }} | ผู้ดูแลเดิม: {{ r.original_pet.caretaker_name }} | ที่อยู่เดิม: {{ r.original_pet.current_address }}
+              </div>
+              {% endif %}
+
+              <!-- การดำเนินการอนุมัติ หรือ ปฏิเสธ (เฉพาะสถานะ pending) -->
+              {% if r.status == 'pending' %}
+              <div style="display: flex; gap: 1rem; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem; flex-wrap: wrap;">
+                <!-- ฟอร์มอนุมัติ -->
+                <form method="POST" action="{{ url_for('admin.request_approve', request_id=r.id) }}" style="display: flex; gap: 0.5rem; align-items: center; flex: 1; min-width: 250px;">
+                  <input type="text" name="admin_notes" class="form-control" placeholder="ข้อความหมายเหตุ เช่น ข้อมูลถูกต้อง อนุมัติเข้าสู่ระบบ" style="padding: 0.45rem 0.75rem; font-size: 0.85rem;">
+                  <button type="submit" class="btn btn-success btn-sm" style="white-space: nowrap;">
+                    ✅ อนุมัติคำขอ
+                  </button>
+                </form>
+
+                <!-- ฟอร์มปฏิเสธ -->
+                <form method="POST" action="{{ url_for('admin.request_reject', request_id=r.id) }}" style="display: flex; gap: 0.5rem; align-items: center; flex: 1; min-width: 250px;">
+                  <input type="text" name="reason" class="form-control" placeholder="ระบุเหตุผลที่ปฏิเสธให้ผู้ใช้ทราบ" style="padding: 0.45rem 0.75rem; font-size: 0.85rem;" required>
+                  <button type="submit" class="btn btn-danger btn-sm" style="white-space: nowrap;">
+                    ❌ ปฏิเสธคำขอ
+                  </button>
+                </form>
+              </div>
+              {% else %}
+              <div style="border-top: 1px solid var(--border-color); padding-top: 0.75rem; font-size: 0.85rem; color: #64748b;">
+                <strong>หมายเหตุการดำเนินการ:</strong> {{ r.admin_notes or '-' }} (ดำเนินการเมื่อ: {{ r.resolved_at }})
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+          <span style="font-size: 3rem;">📭</span>
+          <p style="margin-top: 0.5rem; font-size: 1.05rem;">ไม่มีคำขอใดๆ จากผู้ใช้ในขณะนี้</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

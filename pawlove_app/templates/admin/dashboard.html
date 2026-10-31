@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+
+{% block title %}แดชบอร์ดภาพรวมและสถิติระบบ - PawLove Admin{% endblock %}
+
+{% block content %}
+<div class="admin-layout-wrapper">
+  <!-- Sidebar ด้านซ้าย -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-brand" style="display: flex; align-items: center; gap: 0.6rem;">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PawLove Logo" style="height: 38px; width: auto; object-fit: contain;">
+      <span>PawLove Admin</span>
+    </div>
+    <ul class="admin-sidebar-menu">
+      <li class="admin-menu-item active"><a href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-chart-line"></i> แดชบอร์ด</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.pets_list') }}"><i class="fa-solid fa-paw"></i> จัดการน้องหมา/แมว</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.news_manage') }}"><i class="fa-solid fa-newspaper"></i> จัดการข่าวสาร</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.users_list') }}"><i class="fa-solid fa-users"></i> จัดการผู้ใช้</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.requests_list') }}"><i class="fa-solid fa-inbox"></i> คำขอจากผู้ใช้</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.adoptions_list') }}"><i class="fa-solid fa-file-signature"></i> คำขอรับเลี้ยง</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.quotes_list') }}"><i class="fa-solid fa-images"></i> คำคม & แบนเนอร์สไลด์</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.donations_list') }}"><i class="fa-solid fa-hand-holding-dollar"></i> ประวัติบริจาค & สลีป</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.content_edit') }}"><i class="fa-solid fa-pen-to-square"></i> จัดการเนื้อหาเว็บ</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('client.index') }}"><i class="fa-solid fa-globe"></i> กลับสู่หน้าเว็บ</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content Area ด้านขวา -->
+  <main class="admin-content-area">
+    <!-- Header Title & Actions -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.25rem;">
+          <h1 style="font-size: 1.6rem; font-weight: 800; color: #1e2229; margin: 0;">
+            ภาพรวมระบบหลังบ้าน (Dashboard & Analytics)
+          </h1>
+          <span class="pill-badge pill-orange" style="font-size: 0.8rem;">
+            <i class="fa-solid fa-calendar-check"></i> {{ d.period_label }}
+          </span>
+        </div>
+        <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">
+          ยินดีต้อนรับผู้ดูแลระบบ: <strong>{{ session.get('user_name') }}</strong> | รายงานสรุปผลรายวัน รายเดือน และรายปี
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <!-- ปุ่มพิมพ์รายงานสรุปผล (Print) -->
+        <button type="button" onclick="window.print()" class="btn btn-outline btn-sm no-print" style="color: #0369a1; border-color: #bae6fd; background: #f0f9ff;" title="พิมพ์รายงานสรุปแดชบอร์ด">
+          <i class="fa-solid fa-print"></i> พิมพ์รายงานสรุป
+        </button>
+        <!-- ปุ่มส่งออกเข้า Google Sheets / CSV -->
+        <a href="{{ url_for('admin.dashboard_export_csv', period=d.period, date=d.selected_date, month=d.selected_month, year=d.selected_year) }}" class="btn btn-outline btn-sm no-print" style="color: #15803d; border-color: #bbf7d0; background: #f0fdf4;" title="ดาวน์โหลดไฟล์สำหรับเปิดใน Google Sheets หรือ Excel">
+          <i class="fa-solid fa-file-excel"></i> ส่งออกเข้าชีท (Sheets/CSV)
+        </a>
+        <a href="{{ url_for('admin.pet_add') }}" class="btn btn-orange btn-sm no-print">
+          <i class="fa-solid fa-plus"></i> เพิ่มน้องหมา/แมว
+        </a>
+        <a href="{{ url_for('admin.news_add') }}" class="btn btn-outline btn-sm no-print">
+          <i class="fa-solid fa-bullhorn"></i> เพิ่มข่าวสารใหม่
+        </a>
+      </div>
+    </div>
+
+    <!-- ==================== 1. Timeframe Filter Toolbar ==================== -->
+    <div class="card" style="margin-bottom: 1.75rem; padding: 1rem 1.25rem; background: #ffffff; border: 1px solid var(--border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <!-- แท็บเลือกระยะเวลาด่วน -->
+        <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+          <span style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-right: 0.35rem;">
+            <i class="fa-solid fa-filter" style="color: var(--primary-orange);"></i> เลือกช่วงเวลา:
+          </span>
+          <a href="{{ url_for('admin.dashboard', period='all') }}" 
+             class="btn btn-sm {% if d.period == 'all' %}btn-orange{% else %}btn-outline{% endif %}" style="padding: 0.35rem 0.85rem;">
+            ทั้งหมด
+          </a>
+          <a href="{{ url_for('admin.dashboard', period='day') }}" 
+             class="btn btn-sm {% if d.period == 'day' %}btn-orange{% else %}btn-outline{% endif %}" style="padding: 0.35rem 0.85rem;">
+            <i class="fa-solid fa-calendar-day"></i> รายวัน
+          </a>
+          <a href="{{ url_for('admin.dashboard', period='month') }}" 
+             class="btn btn-sm {% if d.period == 'month' %}btn-orange{% else %}btn-outline{% endif %}" style="padding: 0.35rem 0.85rem;">
+            <i class="fa-solid fa-calendar-week"></i> รายเดือน
+          </a>
+          <a href="{{ url_for('admin.dashboard', period='year') }}" 
+             class="btn btn-sm {% if d.period == 'year' %}btn-orange{% else %}btn-outline{% endif %}" style="padding: 0.35rem 0.85rem;">
+            <i class="fa-solid fa-calendar"></i> รายปี
+          </a>
+        </div>
+
+        <!-- ฟอร์มเลือกวันที่เฉพาะเจาะจง -->
+        <form method="GET" action="{{ url_for('admin.dashboard') }}" style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+          {% if d.period == 'day' %}
+            <input type="hidden" name="period" value="day">
+            <input type="date" name="date" value="{{ d.selected_date }}" class="form-control" style="padding: 0.35rem 0.65rem; font-size: 0.85rem; width: auto;" onchange="this.form.submit()">
+          {% elif d.period == 'month' %}
+            <input type="hidden" name="period" value="month">
+            <input type="month" name="month" value="{{ d.selected_month }}" class="form-control" style="padding: 0.35rem 0.65rem; font-size: 0.85rem; width: auto;" onchange="this.form.submit()">
+          {% elif d.period == 'year' %}
+            <input type="hidden" name="period" value="year">
+            <select name="year" class="form-control" style="padding: 0.35rem 0.65rem; font-size: 0.85rem; width: auto;" onchange="this.form.submit()">
+              {% for y in range(2024, 2031) %}
+              <option value="{{ y }}" {% if d.selected_year == y|string %}selected{% endif %}>ปี ค.ศ. {{ y }}</option>
+              {% endfor %}
+            </select>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+
+    <!-- ==================== 2. สรุปยอดบริจาค (รวม กองทุนกลาง สัตว์ที่รอรับการช่วยเหลือ สัตว์ที่อยู่ระหว่างการรักษา) ==================== -->
+    <div style="margin-bottom: 2rem;">
+      <h2 style="font-size: 1.15rem; font-weight: 700; color: #1e2229; margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-hand-holding-dollar" style="color: var(--primary-orange);"></i> สรุปยอดเงินบริจาค ({{ d.period_label }})
+      </h2>
+
+      <div class="grid-4" style="gap: 1rem; margin-bottom: 1rem;">
+        <!-- 1. ยอดบริจาครวม -->
+        <div class="card" style="padding: 1.25rem; border-top: 3px solid var(--primary-orange); background: #ffffff;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">ยอดบริจาครวมทั้งหมด</span>
+              <div style="font-size: 1.6rem; font-weight: 800; color: var(--primary-orange); margin: 0.35rem 0;">
+                ฿ {{ '{:,.2f}'.format(d.donations_total) }}
+              </div>
+            </div>
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #fff7ed; display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.2rem;">
+              <i class="fa-solid fa-coins"></i>
+            </div>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">
+            จำนวนที่ตรวจสอบผ่าน: <strong>{{ d.donations_count }}</strong> รายการ
+          </div>
+        </div>
+
+        <!-- 2. กองทุนกลาง -->
+        <div class="card" style="padding: 1.25rem; border-top: 3px solid #0284c7; background: #ffffff;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">กองทุนกลางโครงการ</span>
+              <div style="font-size: 1.6rem; font-weight: 800; color: #0284c7; margin: 0.35rem 0;">
+                ฿ {{ '{:,.2f}'.format(d.donations_general) }}
+              </div>
+            </div>
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #f0f9ff; display: flex; align-items: center; justify-content: center; color: #0284c7; font-size: 1.2rem;">
+              <i class="fa-solid fa-vault"></i>
+            </div>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">
+            อาหาร ยา เวชภัณฑ์ และบริหารศูนย์
+          </div>
+        </div>
+
+        <!-- 3. สัตว์ที่รอรับการช่วยเหลือ -->
+        <div class="card" style="padding: 1.25rem; border-top: 3px solid #d97706; background: #ffffff;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">สัตว์ที่รอรับการช่วยเหลือ</span>
+              <div style="font-size: 1.6rem; font-weight: 800; color: #d97706; margin: 0.35rem 0;">
+                ฿ {{ '{:,.2f}'.format(d.donations_rescue) }}
+              </div>
+            </div>
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #fffbeb; display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 1.2rem;">
+              <i class="fa-solid fa-life-ring"></i>
+            </div>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">
+            ลงพื้นที่ ประสานงานเคสฉุกเฉิน
+          </div>
+        </div>
+
+        <!-- 4. สัตว์ที่อยู่ระหว่างการรักษา -->
+        <div class="card" style="padding: 1.25rem; border-top: 3px solid #16a34a; background: #ffffff;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">สัตว์ที่อยู่ระหว่างการรักษา</span>
+              <div style="font-size: 1.6rem; font-weight: 800; color: #16a34a; margin: 0.35rem 0;">
+                ฿ {{ '{:,.2f}'.format(d.donations_medical) }}
+              </div>
+            </div>
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #f0fdf4; display: flex; align-items: center; justify-content: center; color: #16a34a; font-size: 1.2rem;">
+              <i class="fa-solid fa-stethoscope"></i>
+            </div>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">
+            ค่ารักษาพยาบาล ผ่าตัด และฟื้นฟู
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 3. ยอดคนเข้าระบบ (User Access & Traffic Activity) ==================== -->
+    <div style="margin-bottom: 2rem;">
+      <h2 style="font-size: 1.15rem; font-weight: 700; color: #1e2229; margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-users" style="color: #6366f1;"></i> สถิติยอดคนเข้าระบบ ({{ d.period_label }})
+      </h2>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+        <div class="card" style="padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+          <div style="width: 48px; height: 48px; border-radius: 10px; background: #eef2ff; color: #6366f1; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+            <i class="fa-solid fa-right-to-bracket"></i>
+          </div>
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">ยอดคนเข้าระบบทั้งหมด</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #1e2229;">{{ d.total_logins }} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">ครั้ง</span></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+          <div style="width: 48px; height: 48px; border-radius: 10px; background: #fdf2f8; color: #db2777; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+            <i class="fa-solid fa-user-check"></i>
+          </div>
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">ผู้ใช้งานจริงที่ไม่ซ้ำ (Unique Users)</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #1e2229;">{{ d.unique_users }} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">บัญชี</span></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+          <div style="width: 48px; height: 48px; border-radius: 10px; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+            <i class="fa-solid fa-user-group"></i>
+          </div>
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">สมาชิกทั่วไปเข้าใช้ (User)</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #059669;">{{ d.user_logins }} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">ครั้ง</span></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+          <div style="width: 48px; height: 48px; border-radius: 10px; background: #fff7ed; color: #ea580c; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">ผู้ดูแลระบบเข้าใช้ (Admin)</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #ea580c;">{{ d.admin_logins }} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">ครั้ง</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 4. สรุปสัตว์หาบ้าน (เพิ่มโดยผู้ใช้ vs แอดมิน แยกหมาแมว และหาบ้านสำเร็จ) ==================== -->
+    <div style="margin-bottom: 2rem;">
+      <h2 style="font-size: 1.15rem; font-weight: 700; color: #1e2229; margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-paw" style="color: var(--primary-orange);"></i> สถิติสัตว์หาบ้านและการรับเลี้ยงสำเร็จ ({{ d.period_label }})
+      </h2>
+
+      <!-- 4 การ์ดเปรียบเทียบสถิติสัตว์ -->
+      <div class="grid-2" style="gap: 1.25rem; margin-bottom: 1.5rem;">
+        <!-- กล่องฝั่งผู้ใช้งานทั่วไป -->
+        <div class="card" style="padding: 1.5rem; border: 1px solid #fed7aa; background: #fffaf5;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #ffedd5; padding-bottom: 0.65rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="background: var(--primary-orange); color: white; border-radius: 6px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-user"></i>
+              </span>
+              <strong style="color: #9a3412; font-size: 1.05rem;">สัตว์ที่เพิ่มโดยผู้ใช้ (User Submitted)</strong>
+            </div>
+            <span class="pill-badge pill-orange" style="font-size: 0.8rem;">รวม {{ d.user_pets_total }} ตัว</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <!-- เพิ่มโดยผู้ใช้: สุนัข & แมว -->
+            <div style="background: white; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid #ffedd5;">
+              <div style="font-size: 0.85rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
+                <i class="fa-solid fa-dog" style="color: #ea580c;"></i> สุนัข (Dog)
+              </div>
+              <div style="font-size: 1.5rem; font-weight: 800; color: #1e2229; margin-top: 0.25rem;">
+                {{ d.user_pets_dog }} <span style="font-size: 0.8rem; font-weight: 500; color: #64748b;">ตัว</span>
+              </div>
+            </div>
+
+            <div style="background: white; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid #ffedd5;">
+              <div style="font-size: 0.85rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
+                <i class="fa-solid fa-cat" style="color: #ea580c;"></i> แมว (Cat)
+              </div>
+              <div style="font-size: 1.5rem; font-weight: 800; color: #1e2229; margin-top: 0.25rem;">
+                {{ d.user_pets_cat }} <span style="font-size: 0.8rem; font-weight: 500; color: #64748b;">ตัว</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- หาบ้านสำเร็จโดยที่เพิ่มจากผู้ใช้ -->
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: #166534; font-size: 0.9rem; display: flex; align-items: center; gap: 0.35rem;">
+                <i class="fa-solid fa-circle-check"></i> หาบ้านได้สำเร็จ (เพิ่มจากผู้ใช้)
+              </strong>
+              <span style="font-weight: 800; font-size: 1.15rem; color: #166534;">{{ d.user_adopted_total }} ตัว</span>
+            </div>
+            <div style="display: flex; gap: 1.5rem; font-size: 0.85rem; color: #166534;">
+              <span><i class="fa-solid fa-dog"></i> สุนัขสำเร็จ: <strong>{{ d.user_adopted_dog }}</strong> ตัว</span>
+              <span><i class="fa-solid fa-cat"></i> แมวสำเร็จ: <strong>{{ d.user_adopted_cat }}</strong> ตัว</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- กล่องฝั่งผู้ดูแลระบบ -->
+        <div class="card" style="padding: 1.5rem; border: 1px solid #bfdbfe; background: #f8fbff;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #dbeafe; padding-bottom: 0.65rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="background: #2563eb; color: white; border-radius: 6px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-shield-halved"></i>
+              </span>
+              <strong style="color: #1e40af; font-size: 1.05rem;">สัตว์ที่เพิ่มโดยแอดมิน (Admin Created)</strong>
+            </div>
+            <span class="pill-badge pill-purple" style="font-size: 0.8rem; background: #dbeafe; color: #1e40af;">รวม {{ d.admin_pets_total }} ตัว</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <!-- เพิ่มโดยแอดมิน: สุนัข & แมว -->
+            <div style="background: white; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid #dbeafe;">
+              <div style="font-size: 0.85rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
+                <i class="fa-solid fa-dog" style="color: #2563eb;"></i> สุนัข (Dog)
+              </div>
+              <div style="font-size: 1.5rem; font-weight: 800; color: #1e2229; margin-top: 0.25rem;">
+                {{ d.admin_pets_dog }} <span style="font-size: 0.8rem; font-weight: 500; color: #64748b;">ตัว</span>
+              </div>
+            </div>
+
+            <div style="background: white; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid #dbeafe;">
+              <div style="font-size: 0.85rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
+                <i class="fa-solid fa-cat" style="color: #2563eb;"></i> แมว (Cat)
+              </div>
+              <div style="font-size: 1.5rem; font-weight: 800; color: #1e2229; margin-top: 0.25rem;">
+                {{ d.admin_pets_cat }} <span style="font-size: 0.8rem; font-weight: 500; color: #64748b;">ตัว</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- หาบ้านสำเร็จโดยที่เพิ่มจากแอดมิน -->
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: #166534; font-size: 0.9rem; display: flex; align-items: center; gap: 0.35rem;">
+                <i class="fa-solid fa-circle-check"></i> หาบ้านได้สำเร็จ (เพิ่มจากแอดมิน)
+              </strong>
+              <span style="font-weight: 800; font-size: 1.15rem; color: #166534;">{{ d.admin_adopted_total }} ตัว</span>
+            </div>
+            <div style="display: flex; gap: 1.5rem; font-size: 0.85rem; color: #166534;">
+              <span><i class="fa-solid fa-dog"></i> สุนัขสำเร็จ: <strong>{{ d.admin_adopted_dog }}</strong> ตัว</span>
+              <span><i class="fa-solid fa-cat"></i> แมวสำเร็จ: <strong>{{ d.admin_adopted_cat }}</strong> ตัว</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ตารางสรุปเปรียบเทียบภาพรวม (Detailed Metric Table) -->
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="background: #f8fafc; padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border-light); font-weight: 700; color: #1e2229; font-size: 0.95rem;">
+          <i class="fa-solid fa-table-list" style="color: var(--primary-orange); margin-right: 0.4rem;"></i> ตารางสรุปภาพรวมสัตว์หาบ้านแยกหมวดหมู่ ({{ d.period_label }})
+        </div>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem;">
+            <thead>
+              <tr style="background: #ffffff; border-bottom: 2px solid var(--border-light); color: var(--text-muted); font-size: 0.8rem;">
+                <th style="padding: 0.85rem 1.25rem;">รายการสถิติ</th>
+                <th style="padding: 0.85rem 1.25rem; text-align: center;"><i class="fa-solid fa-dog"></i> สุนัข (Dog)</th>
+                <th style="padding: 0.85rem 1.25rem; text-align: center;"><i class="fa-solid fa-cat"></i> แมว (Cat)</th>
+                <th style="padding: 0.85rem 1.25rem; text-align: center;">รวมทั้งหมด</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 0.85rem 1.25rem; font-weight: 600; color: #1e2229;">
+                  สัตว์หาบ้านที่เพิ่มโดยผู้ใช้
+                </td>
+                <td style="padding: 0.85rem 1.25rem; text-align: center;">{{ d.user_pets_dog }} ตัว</td>
+                <td style="padding: 0.85rem 1.25rem; text-align: center;">{{ d.user_pets_cat }} ตัว</td>
+                <td style="padding: 0.85rem 1.25rem; text-align: center; font-weight: 700; color: var(--primary-orange);">{{ d.user_pets_total }} ตัว</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-light); background: #fafbfc;">
+                <td style="padding: 0.85rem 1.25rem; font-weight: 600; color: #166534;">
+                  <i class="fa-solid fa-check"></i> สัตว์หาบ้านได้สำเร็จ (เพิ่มจากผู้ใช้)
+                </td>
+                <td style="padding: 0.85rem 1.25rem; text-align: center; color: #166534;">{{ d.user_adopted_dog }} ตัว</td>
+                <td style="padding: 0.85rem 1.25rem; text-align: center; color: #166534;">{{ d.user_adopted_cat }} ตัว</td>
+                <td style="padding: 0.85rem 1.25rem; text-align: center; font-weight: 700; color: #166534;">{{ d.user_adopted_total }} ตัว</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 0.85rem 1.25rem; font-weight: 600; color: #1e2229;">
+                  สัตว์หาบ้านที่เพิ่มโดยแอดมิน
+                </td>
+                <td style="padding: 0.85rem 1.25rem; text-align: center;">{{ d.admin_pets_dog }} ตัว</td>
+                <td style="padding: 0.85rem 1.25rem; text-align: center;">{{ d.admin_pets_cat }} ตัว</td>
+                <td style="padding: 0.85rem 1.25rem; text-align: center; font-weight: 700; color: #2563eb;">{{ d.admin_pets_total }} ตัว</td>
+              </tr>
+              <tr style="background: #fafbfc;">
+                <td style="padding: 0.85rem 1.25rem; font-weight: 600; color: #166534;">
+                  <i class="fa-solid fa-check"></i> สัตว์หาบ้านได้สำเร็จ (เพิ่มจากแอดมิน)
+                </td>
+                <td style="padding: 0.85rem 1.25rem; text-align: center; color: #166534;">{{ d.admin_adopted_dog }} ตัว</td>
+                <td style="padding: 0.85rem 1.25rem; text-align: center; color: #166534;">{{ d.admin_adopted_cat }} ตัว</td>
+                <td style="padding: 0.85rem 1.25rem; text-align: center; font-weight: 700; color: #166534;">{{ d.admin_adopted_total }} ตัว</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 5. คำขอรออนุมัติ & การเข้าใช้ล่าสุด ==================== -->
+    <div class="grid-2" style="gap: 1.5rem; margin-bottom: 2rem;">
+      <!-- คำขอรอการอนุมัติ -->
+      <div class="card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-size: 1rem; font-weight: 700; color: #1e2229; margin: 0;">
+            <i class="fa-solid fa-inbox" style="color: var(--primary-orange); margin-right: 0.35rem;"></i> คำขอรออนุมัติจากผู้ใช้ ({{ pending_requests }})
+          </h3>
+          <a href="{{ url_for('admin.requests_list') }}" class="btn btn-outline btn-sm">ดูทั้งหมด</a>
+        </div>
+        <div class="card-body">
+          {% if recent_requests %}
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              {% for r in recent_requests %}
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: var(--bg-body); border-radius: var(--radius-sm); border: 1px solid var(--border-light); flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                  <span class="pill-badge pill-orange" style="font-size: 0.75rem;">
+                    {{ 'ขอเพิ่มสัตว์' if r.request_type == 'add' else 'ขอแก้ไขข้อมูล' }}
+                  </span>
+                  <strong style="color: #1e2229; font-size: 0.9rem; margin-left: 0.35rem;">{{ r.data.get('name') }}</strong>
+                  <span style="font-size: 0.785rem; color: var(--text-light); margin-left: 0.35rem;">โดย {{ r.user_fullname }}</span>
+                </div>
+                <a href="{{ url_for('admin.requests_list') }}" class="btn btn-orange btn-sm">
+                  พิจารณา ➜
+                </a>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.885rem;">
+              ไม่มีคำขอค้างที่รอการพิจารณาในขณะนี้
+            </p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ประวัติการเข้าสู่ระบบล่าสุด -->
+      <div class="card">
+        <div class="card-header">
+          <h3 style="font-size: 1rem; font-weight: 700; color: #1e2229; margin: 0;">
+            <i class="fa-solid fa-clock-rotate-left" style="color: #6366f1; margin-right: 0.35rem;"></i> บันทึกการเข้าสู่ระบบล่าสุด (Login Activity)
+          </h3>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          {% if d.recent_logins %}
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+              <thead>
+                <tr style="background: #f8fafc; border-bottom: 1px solid var(--border-light); color: var(--text-muted); font-size: 0.75rem;">
+                  <th style="padding: 0.65rem 1rem;">เวลา</th>
+                  <th style="padding: 0.65rem 1rem;">ผู้ใช้งาน</th>
+                  <th style="padding: 0.65rem 1rem; text-align: center;">บทบาท</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for l in d.recent_logins %}
+                <tr style="border-bottom: 1px solid var(--border-light);">
+                  <td style="padding: 0.65rem 1rem; color: var(--text-muted); font-size: 0.8rem; white-space: nowrap;">
+                    {{ l.created_at }}
+                  </td>
+                  <td style="padding: 0.65rem 1rem;">
+                    <strong style="color: #1e2229; display: block;">{{ l.fullname or 'ผู้ใช้งาน' }}</strong>
+                    <span style="color: var(--text-light); font-size: 0.75rem;">{{ l.email }}</span>
+                  </td>
+                  <td style="padding: 0.65rem 1rem; text-align: center;">
+                    {% if l.role == 'admin' %}
+                    <span class="pill-badge pill-purple" style="font-size: 0.7rem;">Admin</span>
+                    {% else %}
+                    <span class="pill-badge pill-green" style="font-size: 0.7rem;">User</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.885rem;">
+            ยังไม่มีบันทึกการเข้าสู่ระบบ
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

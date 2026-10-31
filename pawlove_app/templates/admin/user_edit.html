@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}แก้ไขบัญชีผู้ใช้ {{ user.fullname }} - ผู้ดูแลระบบ PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; padding-top: 1.5rem; padding-bottom: 3.5rem;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('admin.users_list') }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.95rem;">
+      ← กลับไปยังรายชื่อผู้ใช้
+    </a>
+  </div>
+
+  <div class="card" style="border-top: 5px solid #0284c7;">
+    <div class="card-body" style="padding: 2.5rem 2rem;">
+      <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-bottom: 0.5rem;">
+        แก้ไขข้อมูลบัญชีผู้ใช้
+      </h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem;">
+        (ข้อกำหนดที่ 2: แอดมินสามารถแก้ไขบัญชีผู้ใช้รายอื่นได้ทั้งหมด)
+      </p>
+
+      <form method="POST">
+        <div class="form-group">
+          <label class="form-label" for="fullname">ชื่อ-นามสกุล *</label>
+          <input type="text" id="fullname" name="fullname" class="form-control" value="{{ user.fullname }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">อีเมล *</label>
+          <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="role">สิทธิ์การใช้งาน (Role) *</label>
+          <select id="role" name="role" class="form-control" required>
+            <option value="user" {% if user.role == 'user' %}selected{% endif %}>👤 ผู้ใช้ทั่วไป (User)</option>
+            <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>🛡️ ผู้ดูแลระบบ (Admin)</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="background: #f8fafc; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
+          <label class="form-label" for="new_password" style="color: #475569;">
+            เปลี่ยนรหัสผ่านใหม่ (หากไม่ต้องการเปลี่ยนให้เว้นว่างไว้)
+          </label>
+          <input type="password" id="new_password" name="new_password" class="form-control" placeholder="รหัสผ่านใหม่">
+          <small style="color: var(--text-muted); font-size: 0.85rem; display: block; margin-top: 0.3rem;">
+            * สำหรับแอดมินช่วยรีเซ็ตรหัสผ่านให้แก่ผู้ใช้ในกรณีที่ลืมรหัสผ่าน
+          </small>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1rem;">
+          💾 บันทึกการแก้ไขข้อมูลผู้ใช้
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

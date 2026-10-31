@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}จัดการข้อมูลน้องหมา น้องแมว - PawLove Admin{% endblock %}
+
+{% block content %}
+<div class="admin-layout-wrapper">
+  <!-- Sidebar ด้านซ้ายสีเข้มสไตล์ PawCare Admin ในรูป -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-brand">
+      <span><i class="fa-solid fa-shield-halved" style="color: var(--primary-orange);"></i></span> PawLove Admin
+    </div>
+    <ul class="admin-sidebar-menu">
+      <li class="admin-menu-item"><a href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-chart-pie" style="margin-right: 0.5rem;"></i> หน้าหลัก</a></li>
+      <li class="admin-menu-item active"><a href="{{ url_for('admin.pets_list') }}"><i class="fa-solid fa-paw" style="margin-right: 0.5rem;"></i> จัดการน้องหมา/แมว</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.users_list') }}"><i class="fa-solid fa-users" style="margin-right: 0.5rem;"></i> จัดการผู้ใช้</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.requests_list') }}"><i class="fa-solid fa-bell" style="margin-right: 0.5rem;"></i> คำขอจากผู้ใช้</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.adoptions_list') }}"><i class="fa-solid fa-clipboard-list" style="margin-right: 0.5rem;"></i> คำขอรับเลี้ยง</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.quotes_list') }}"><i class="fa-solid fa-images" style="margin-right: 0.5rem;"></i> คำคม & แบนเนอร์สไลด์</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.donations_list') }}"><i class="fa-solid fa-hand-holding-dollar" style="margin-right: 0.5rem;"></i> ประวัติบริจาค & สลีป</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.content_edit') }}"><i class="fa-solid fa-pen-to-square" style="margin-right: 0.5rem;"></i> จัดการเนื้อหาเว็บ</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('client.index') }}"><i class="fa-solid fa-globe" style="margin-right: 0.5rem;"></i> กลับสู่หน้าเว็บ</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content Area ด้านขวา (สไตล์ในรูปเป๊ะๆ) -->
+  <main class="admin-content-area">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <h1 style="font-size: 1.5rem; font-weight: 800; color: #1e2229;">
+        จัดการข้อมูลน้องหมา น้องแมว
+      </h1>
+      <a href="{{ url_for('admin.pet_add') }}" class="btn btn-orange">
+        <i class="fa-solid fa-plus" style="margin-right: 0.35rem;"></i> เพิ่มน้องหมา/แมว
+      </a>
+    </div>
+
+    <!-- แถบค้นหาในรูป (สไตล์ PawCare) -->
+    <div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1.5rem;">
+      <form method="GET" action="{{ url_for('admin.pets_list') }}" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+        <input 
+          type="text" 
+          name="q" 
+          class="form-control" 
+          placeholder="ค้นหาชื่อ, พันธุ์, พิกัด..." 
+          style="flex: 1; min-width: 200px; padding: 0.5rem 0.85rem;"
+          value="{{ request.args.get('q', '') }}"
+        >
+        <select name="species" class="form-control" style="width: auto; padding: 0.5rem 0.85rem;">
+          <option value="">ทั้งหมด</option>
+          <option value="สุนัข" {% if selected_species == 'สุนัข' %}selected{% endif %}>สุนัข</option>
+          <option value="แมว" {% if selected_species == 'แมว' %}selected{% endif %}>แมว</option>
+        </select>
+        <button type="submit" class="btn btn-outline btn-sm">
+          <i class="fa-solid fa-magnifying-glass" style="margin-right: 0.35rem;"></i> ค้นหา
+        </button>
+      </form>
+    </div>
+
+    <!-- ตาราง Clean Table สไตล์ในรูปเป๊ะๆ -->
+    <div style="background: white; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-light); box-shadow: var(--shadow-subtle);">
+      <table class="clean-table" style="box-shadow: none; border: none;">
+        <thead>
+          <tr>
+            <th style="width: 80px;">รูปภาพ</th>
+            <th>ชื่อ</th>
+            <th>เพศ</th>
+            <th>อายุ</th>
+            <th>สถานะ</th>
+            <th style="text-align: right; width: 140px;">จัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if pets %}
+            {% for pet in pets %}
+            <tr>
+              <td>
+                <img 
+                  src="{{ pet.image_url }}" 
+                  alt="{{ pet.name }}" 
+                  class="table-pet-avatar"
+                  onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800'"
+                >
+              </td>
+              <td>
+                <strong style="color: #1e2229;">{{ pet.name }}</strong>
+                <span style="font-size: 0.775rem; color: var(--text-light); display: block;">{{ pet.breed }}</span>
+              </td>
+              <td style="color: var(--text-muted);">{{ pet.gender }}</td>
+              <td style="color: var(--text-muted);">{{ pet.age_years }} ปี {{ pet.age_months }} ด.</td>
+              <td>
+                {% if 'รักษา' in pet.status %}
+                  <span class="pill-badge pill-orange">กำลังรักษา</span>
+                {% elif 'รอ' in pet.status %}
+                  <span class="pill-badge pill-yellow">รอช่วยเหลือ</span>
+                {% elif 'กำลังหาบ้าน' in pet.status or 'สุขภาพดี' in pet.status %}
+                  <span class="pill-badge pill-green">กำลังหาบ้าน</span>
+                {% elif 'หาบ้านได้แล้ว' in pet.status %}
+                  <span class="pill-badge pill-purple">หาบ้านได้แล้ว</span>
+                {% else %}
+                  <span class="pill-badge pill-green">กำลังหาบ้าน</span>
+                {% endif %}
+              </td>
+              <td style="text-align: right;">
+                <div style="display: flex; gap: 0.4rem; justify-content: flex-end;">
+                  <!-- ปุ่มอัปเดตสถานะพร้อมวันเวลา (ข้อกำหนดที่ 6) -->
+                  <a href="{{ url_for('admin.pet_status_update', pet_id=pet.id) }}" class="btn-icon-action" title="อัปเดตอาการ/สถานะ">
+                    <i class="fa-regular fa-clock"></i>
+                  </a>
+                  <!-- ปุ่มแก้ไข ในรูป -->
+                  <a href="{{ url_for('admin.pet_edit', pet_id=pet.id) }}" class="btn-icon-action" title="แก้ไขข้อมูล">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </a>
+                  <!-- ปุ่มลบ ในรูป -->
+                  <form method="POST" action="{{ url_for('admin.pet_delete', pet_id=pet.id) }}" onsubmit="return confirm('ยืนยันลบข้อมูล {{ pet.name }}?');" style="display: inline;">
+                    <button type="submit" class="btn-icon-action delete" title="ลบข้อมูล">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                ไม่พบข้อมูลน้องหมา น้องแมว
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+{% endblock %}

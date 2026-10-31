@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}แก้ไขเนื้อหาเว็บไซต์และเมนูทั้งหมด - ผู้ดูแลระบบ PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; padding-top: 1.5rem; padding-bottom: 3.5rem;">
+  <div style="margin-bottom: 2rem;">
+    <span class="admin-menu-badge">📝 ข้อกำหนดที่ 5: แถบเมนูแอดมินต้องแก้ไขได้ทั้งหมด</span>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-dark); margin-top: 0.3rem;">
+      จัดการและแก้ไขเนื้อหาเว็บไซต์ PawLove
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      แก้ไขข้อมูลโครงการ การทำงานของโครงการ 4 ด้าน ช่องทางติดต่อ และข้อมูลการบริจาค
+    </p>
+  </div>
+
+  <form method="POST" action="{{ url_for('admin.content_edit') }}">
+    <!-- 1. ข้อมูลโครงการ (หน้าหลัก & เกี่ยวกับเรา) -->
+    <div class="card" style="margin-bottom: 2rem; border-top: 5px solid var(--primary);">
+      <div class="card-header">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-dark);">
+          🏢  ข้อมูลโครงการ PawLove
+        </h3>
+      </div>
+      <div class="card-body" style="padding: 1.5rem;">
+        <div class="form-group">
+          <label class="form-label" for="project_info">เนื้อหาข้อมูลโครงการ *</label>
+          <textarea id="project_info" name="project_info" class="form-control" rows="4" required>{{ project_info }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. การทำงานของโครงการ 4 ด้าน -->
+    <div class="card" style="margin-bottom: 2rem; border-top: 5px solid var(--secondary);">
+      <div class="card-header">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-dark);">
+          ⚙️ การทำงานของโครงการ
+        </h3>
+      </div>
+      <div class="card-body" style="padding: 1.5rem;">
+        <!-- ด้านที่ 1: ดูแลการรักษา -->
+        <div class="form-group">
+          <label class="form-label" for="work_medical">ดูแลการรักษา *</label>
+          <textarea id="work_medical" name="work_medical" class="form-control" rows="2" required>{{ project_work.get('medical', '') }}</textarea>
+        </div>
+
+        <!-- ด้านที่ 2: การทำหมัน -->
+        <div class="form-group">
+          <label class="form-label" for="work_sterilization">การทำหมัน *</label>
+          <textarea id="work_sterilization" name="work_sterilization" class="form-control" rows="2" required>{{ project_work.get('sterilization', '') }}</textarea>
+        </div>
+
+        <!-- ด้านที่ 3: การช่วยเหลือฉุกเฉิน -->
+        <div class="form-group">
+          <label class="form-label" for="work_emergency">การช่วยเหลือฉุกเฉิน *</label>
+          <textarea id="work_emergency" name="work_emergency" class="form-control" rows="2" required>{{ project_work.get('emergency', '') }}</textarea>
+        </div>
+
+        <!-- ด้านที่ 4: ศูนย์พักพิงชั่วคราว -->
+        <div class="form-group">
+          <label class="form-label" for="work_shelter">ศูนย์พักพิงชั่วคราว *</label>
+          <textarea id="work_shelter" name="work_shelter" class="form-control" rows="2" required>{{ project_work.get('shelter', '') }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. ช่องทางการติดต่อเรา (ข้อกำหนดที่ 4 & 5: E-Mail Facebook Instagram TikTok) -->
+    <div class="card" style="margin-bottom: 2rem; border-top: 5px solid #0284c7;">
+      <div class="card-header">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-dark);">
+          📞 ช่องทางการติดต่อเรา (E-Mail, Facebook, Instagram, TikTok)
+        </h3>
+      </div>
+      <div class="card-body" style="padding: 1.5rem;">
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="contact_email">✉️ E-Mail *</label>
+            <input type="email" id="contact_email" name="contact_email" class="form-control" value="{{ contact_info.get('email', '') }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="contact_fb">📘 Facebook *</label>
+            <input type="text" id="contact_fb" name="contact_fb" class="form-control" value="{{ contact_info.get('facebook', '') }}" required>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="contact_ig">📷 Instagram *</label>
+            <input type="text" id="contact_ig" name="contact_ig" class="form-control" value="{{ contact_info.get('instagram', '') }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="contact_tiktok">🎵 TikTok *</label>
+            <input type="text" id="contact_tiktok" name="contact_tiktok" class="form-control" value="{{ contact_info.get('tiktok', '') }}" required>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. ข้อมูลการบริจาค -->
+    <div class="card" style="margin-bottom: 2rem; border-top: 5px solid #10b981;">
+      <div class="card-header">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-dark);">
+          💖 ข้อมูลการบริจาค
+      </div>
+      <div class="card-body" style="padding: 1.5rem;">
+        <div class="form-group">
+          <label class="form-label" for="donation_info">ข้อความเชิญชวนและรายละเอียดการบริจาค *</label>
+          <textarea id="donation_info" name="donation_info" class="form-control" rows="3" required>{{ donation_info }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; padding: 1rem;">
+      SAVE
+    </button>
+  </form>
+</div>
+{% endblock %}

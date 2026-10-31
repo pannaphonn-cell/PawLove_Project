@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}รับเลี้ยงน้องหมา น้องแมว - PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 1rem; padding-bottom: 3.5rem;">
+  <div style="text-align: center; max-width: 700px; margin: 0 auto 2.5rem;">
+    <h1 style="font-size: 2rem; font-weight: 800; color: #1e2229; margin-bottom: 0.35rem;">
+      รับเลี้ยงน้องหมา น้องแมว
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      เปิดโอกาสให้น้อง ๆ ได้มีบ้านที่อบอุ่น ทุกตัวผ่านการตรวจสุขภาพและทำหมันเรียบร้อยแล้ว
+    </p>
+
+    <!-- แท็บตัวกรองสุนัข / แมว (ข้อกำหนดที่ 9) -->
+    <div style="display: inline-flex; background: #eef0f3; padding: 0.25rem; border-radius: var(--radius-pill); margin-top: 1.25rem; gap: 0.25rem;">
+      <a href="{{ url_for('client.adopt', species='ทั้งหมด') }}" class="btn btn-sm {% if current_species == 'ทั้งหมด' %}btn-orange{% else %}btn-outline{% endif %}" style="border: none; padding: 0.45rem 1.25rem;">
+        ทั้งหมด
+      </a>
+      <a href="{{ url_for('client.adopt', species='สุนัข') }}" class="btn btn-sm {% if current_species == 'สุนัข' %}btn-orange{% else %}btn-outline{% endif %}" style="border: none; padding: 0.45rem 1.25rem;">
+        <i class="fa-solid fa-dog" style="margin-right: 0.35rem;"></i> สุนัข
+      </a>
+      <a href="{{ url_for('client.adopt', species='แมว') }}" class="btn btn-sm {% if current_species == 'แมว' %}btn-orange{% else %}btn-outline{% endif %}" style="border: none; padding: 0.45rem 1.25rem;">
+        <i class="fa-solid fa-cat" style="margin-right: 0.35rem;"></i> แมว
+      </a>
+    </div>
+  </div>
+
+  <!-- การ์ดรายการสัตว์ (สไตล์ PawCare) -->
+  <section style="margin-bottom: 3.5rem;">
+    {% if pets %}
+      <div class="grid-4">
+        {% for pet in pets %}
+        <div class="pet-card">
+          <div class="pet-card-image">
+            <img src="{{ pet.image_url }}" alt="{{ pet.name }}" onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800'">
+          </div>
+          <div class="pet-card-body">
+            <div class="pet-card-header">
+              <h3 class="pet-title">{{ pet.name }}</h3>
+              {% if 'รักษา' in pet.status %}
+                <span class="pill-badge pill-orange">กำลังรักษา</span>
+              {% elif 'รอ' in pet.status %}
+                <span class="pill-badge pill-yellow">รอช่วยเหลือ</span>
+              {% elif 'กำลังหาบ้าน' in pet.status or 'สุขภาพดี' in pet.status %}
+                <span class="pill-badge pill-green">กำลังหาบ้าน</span>
+              {% elif 'หาบ้านได้แล้ว' in pet.status %}
+                <span class="pill-badge pill-purple">หาบ้านได้แล้ว</span>
+              {% else %}
+                <span class="pill-badge pill-green">กำลังหาบ้าน</span>
+              {% endif %}
+            </div>
+
+            <div class="pet-meta-info">
+              <p><i class="fa-regular fa-clock" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> อายุ: {{ pet.age_years }} ปี | เพศ: {{ pet.gender }}</p>
+              <p><i class="fa-solid fa-paw" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> สายพันธุ์: {{ pet.breed }}</p>
+              <p><i class="fa-solid fa-location-dot" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> ที่อยู่: {{ pet.current_address | truncate(35) }}</p>
+            </div>
+
+            <!-- หลอดความคืบหน้าระดมทุน (แสดงเฉพาะสัตว์ที่กำลังรักษาหรือรอรับการช่วยเหลือเท่านั้นตามข้อกำหนด) -->
+            {% if 'รักษา' in pet.status or 'รอ' in pet.status %}
+            <div class="donation-progress-wrap">
+              <div class="progress-labels">
+                <span class="progress-goal">
+                  ฿ 5,000 (เป้าหมาย)
+                </span>
+                <span class="progress-status">
+                  {% if 'รักษา' in pet.status %}ได้รับแล้ว 66%{% else %}รอความช่วยเหลือ{% endif %}
+                </span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill {% if 'รักษา' in pet.status %}progress-medical{% else %}progress-waiting{% endif %}"></div>
+              </div>
+            </div>
+            {% endif %}
+
+            <div style="display: flex; gap: 0.4rem; margin-top: auto;">
+              <a href="{{ url_for('client.pet_detail', pet_id=pet.id) }}" class="btn btn-outline btn-sm" style="flex: 1;">
+                ดูประวัติ
+              </a>
+              {% if 'หาบ้านได้แล้ว' not in pet.status %}
+              <a href="{{ url_for('client.adopt_application', pet_id=pet.id) }}" class="btn btn-orange btn-sm" style="flex: 1.2;">
+                ขอรับเลี้ยง <i class="fa-solid fa-paw" style="margin-left: 0.25rem;"></i>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 3.5rem 1rem; background: white; border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
+        <i class="fa-solid fa-magnifying-glass" style="font-size: 2.5rem; color: var(--text-muted);"></i>
+        <h3 style="font-size: 1.2rem; font-weight: 700; margin-top: 0.75rem; color: #1e2229;">
+          ไม่พบข้อมูลน้องหมา น้องแมวในหมวดหมู่นี้
+        </h3>
+        <a href="{{ url_for('client.adopt', species='ทั้งหมด') }}" class="btn btn-orange" style="margin-top: 1rem;">
+          แสดงทั้งหมด
+        </a>
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- ==================== ขั้นตอนการรับเลี้ยง 5 ขั้นตอน==================== -->
+  <section class="card" style="padding: 2.5rem; margin-bottom: 3.5rem;">
+    <div style="text-align: center; max-width: 600px; margin: 0 auto 2rem;">
+      <h2 style="font-size: 1.5rem; font-weight: 800; color: #1e2229;">
+        ขั้นตอนการรับเลี้ยงจาก PawLove
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.885rem;">
+        5 ขั้นตอนเพื่อความสุขที่ยั่งยืนของน้องและครอบครัวใหม่
+      </p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+      <div style="display: flex; gap: 1rem; align-items: flex-start; padding: 1rem; background: #fff8f5; border-radius: var(--radius-sm); border-left: 3px solid var(--primary-orange);">
+        <strong style="color: var(--primary-orange); font-size: 1.1rem;">1.</strong>
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e2229; margin-bottom: 0.2rem;">การสอบถามข้อมูลเบื้องต้น</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">ผู้ขอรับเลี้ยงกรอกแบบฟอร์มการสอบถามข้อมูลเบื้องต้น</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; align-items: flex-start; padding: 1rem; background: #fff8f5; border-radius: var(--radius-sm); border-left: 3px solid var(--primary-orange);">
+        <strong style="color: var(--primary-orange); font-size: 1.1rem;">2.</strong>
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e2229; margin-bottom: 0.2rem;">การสัมภาษณ์</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;">สัมภาษณ์ผ่านทางวิดีโอคอลกับทีมงานหาบ้านของเรา เพื่อให้เราช่วยหาน้องที่เหมาะสมที่สุดสำหรับคุณ รวมถึงพูดคุยเกี่ยวกับประวัติทางการแพทย์ของสุนัข ความต้องการด้านพฤติกรรม และอื่น ๆ โดยมีPawLoveเป็นตัวกลาง</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; align-items: flex-start; padding: 1rem; background: #fff8f5; border-radius: var(--radius-sm); border-left: 3px solid var(--primary-orange);">
+        <strong style="color: var(--primary-orange); font-size: 1.1rem;">3.</strong>
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e2229; margin-bottom: 0.2rem;">การประเมินบ้าน</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">ประเมินความปลอดภัยของสถานที่ เช่น รั้วรอบขอบชิด และพื้นที่วิ่งเล่น</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; align-items: flex-start; padding: 1rem; background: #fff8f5; border-radius: var(--radius-sm); border-left: 3px solid var(--primary-orange);">
+        <strong style="color: var(--primary-orange); font-size: 1.1rem;">4.</strong>
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e2229; margin-bottom: 0.2rem;">ข้อตกลงการรับเลี้ยง</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">ลงนามในสัญญาข้อตกลงเพื่อยืนยันการดูแลสวัสดิภาพสัตว์ตลอดอายุขัย</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; align-items: flex-start; padding: 1rem; background: #fff8f5; border-radius: var(--radius-sm); border-left: 3px solid var(--primary-orange);">
+        <strong style="color: var(--primary-orange); font-size: 1.1rem;">5.</strong>
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e2229; margin-bottom: 0.2rem;">การจัดเตรียมการเดินทาง</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">นัดหมายวันส่งมอบน้องไปยังบ้านใหม่ พร้อมอุปกรณ์และเอกสารประวัติสุขภาพ</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== สิ่งที่จะได้รับจากการรับเลี้ยงจากPawLove 6 ข้อ (ข้อกำหนดที่ 9) ==================== -->
+  <section style="background: #231f1c; color: white; border-radius: var(--radius-md); padding: 2.5rem 2rem; margin-bottom: 3.5rem;">
+    <div style="text-align: center; max-width: 600px; margin: 0 auto 2rem;">
+      <h2 style="font-size: 1.5rem; font-weight: 800; color: #ffffff;">
+        สิ่งที่จะได้รับจากการรับเลี้ยงจาก PawLove
+      </h2>
+      <p style="color: #9ca3af; font-size: 0.885rem;">
+        เราพร้อมสนับสนุนทุกครอบครัวเพื่อให้การรับเลี้ยงเป็นประสบการณ์ที่ดีที่สุด
+      </p>
+    </div>
+
+    <div class="grid-3" style="gap: 1rem;">
+      <div style="background: rgba(255, 255, 255, 0.05); padding: 1.25rem; border-radius: var(--radius-sm);">
+        <div style="font-size: 1.5rem; margin-bottom: 0.35rem; color: var(--primary-orange);"><i class="fa-solid fa-syringe"></i></div>
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 0.25rem;">1. ดูแลสุขภาพครบถ้วน</h4>
+        <p style="font-size: 0.825rem; color: #d1d5db; line-height: 1.5;">สุนัขและแมวทุกตัวได้รับการทำหมัน ฝังไมโครชิป และฉีดวัคซีนครบถ้วน</p>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.05); padding: 1.25rem; border-radius: var(--radius-sm);">
+        <div style="font-size: 1.5rem; margin-bottom: 0.35rem; color: var(--primary-orange);"><i class="fa-solid fa-gift"></i></div>
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 0.25rem;">2. ฟรี! ไม่มีค่าธรรมเนียม</h4>
+        <p style="font-size: 0.825rem; color: #d1d5db; line-height: 1.5;">ฟรี! ไม่มีค่าธรรมเนียมในการรับเลี้ยง</p>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.05); padding: 1.25rem; border-radius: var(--radius-sm);">
+        <div style="font-size: 1.5rem; margin-bottom: 0.35rem; color: var(--primary-orange);"><i class="fa-solid fa-heart"></i></div>
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 0.25rem;">3. ได้ช่วยสัตว์จร</h4>
+        <p style="font-size: 0.825rem; color: #d1d5db; line-height: 1.5;">ได้ช่วยเหลือสุนัขและแมวจร ให้มีชีวิตใหม่ที่ปลอดภัย</p>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.05); padding: 1.25rem; border-radius: var(--radius-sm);">
+        <div style="font-size: 1.5rem; margin-bottom: 0.35rem; color: var(--primary-orange);"><i class="fa-solid fa-stethoscope"></i></div>
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 0.25rem;">4. ตรวจสุขภาพก่อนส่งมอบ</h4>
+        <p style="font-size: 0.825rem; color: #d1d5db; line-height: 1.5;">ตรวจสุขภาพก่อนออกจากศูนย์พักพิง มั่นใจว่าสุนัขและแมวพร้อมไปอยู่กับครอบครัวใหม่</p>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.05); padding: 1.25rem; border-radius: var(--radius-sm);">
+        <div style="font-size: 1.5rem; margin-bottom: 0.35rem; color: var(--primary-orange);"><i class="fa-solid fa-truck-fast"></i></div>
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 0.25rem;">5. บริการจัดส่งถึงบ้าน</h4>
+        <p style="font-size: 0.825rem; color: #d1d5db; line-height: 1.5;">บริการจัดส่งถึงบ้าน (มีเงื่อนไขเพิ่มเติมสำหรับพื้นที่ห่างไกล)</p>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.05); padding: 1.25rem; border-radius: var(--radius-sm);">
+        <div style="font-size: 1.5rem; margin-bottom: 0.35rem; color: var(--primary-orange);"><i class="fa-solid fa-headset"></i></div>
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 0.25rem;">6. คำแนะนำตลอดเวลา</h4>
+        <p style="font-size: 0.825rem; color: #d1d5db; line-height: 1.5;">หลังจากรับเลี้ยงไปแล้ว หากต้องการคำแนะนำ สามารถติดต่อทีมหาบ้านได้เสมอ</p>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

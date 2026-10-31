@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - PawLove Admin{% endblock %}
+
+{% block content %}
+<div class="admin-layout-wrapper">
+  <!-- Sidebar ด้านซ้าย -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-brand" style="display: flex; align-items: center; gap: 0.6rem;">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PawLove Logo" style="height: 38px; width: auto; object-fit: contain;">
+      <span>PawLove Admin</span>
+    </div>
+    <ul class="admin-sidebar-menu">
+      <li class="admin-menu-item"><a href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-chart-line"></i> แดชบอร์ด</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.pets_list') }}"><i class="fa-solid fa-paw"></i> จัดการน้องหมา/แมว</a></li>
+      <li class="admin-menu-item active"><a href="{{ url_for('admin.news_manage') }}"><i class="fa-solid fa-newspaper"></i> จัดการข่าวสาร</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.users_list') }}"><i class="fa-solid fa-users"></i> จัดการผู้ใช้</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.requests_list') }}"><i class="fa-solid fa-inbox"></i> คำขอจากผู้ใช้</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.adoptions_list') }}"><i class="fa-solid fa-file-signature"></i> คำขอรับเลี้ยง</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.quotes_list') }}"><i class="fa-solid fa-images"></i> คำคม & แบนเนอร์สไลด์</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.donations_list') }}"><i class="fa-solid fa-hand-holding-dollar"></i> ประวัติบริจาค & สลีป</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.content_edit') }}"><i class="fa-solid fa-pen-to-square"></i> จัดการเนื้อหาเว็บ</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('client.index') }}"><i class="fa-solid fa-globe"></i> กลับสู่หน้าเว็บ</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content Area ด้านขวา -->
+  <main class="admin-content-area">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h1 style="font-size: 1.5rem; font-weight: 800; color: #1e2229;">
+          {{ title }}
+        </h1>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          กรอกข้อมูลข่าวสารหรือประกาศเพื่อสื่อสารกับสมาชิกและผู้เยี่ยมชม
+        </p>
+      </div>
+      <a href="{{ url_for('admin.news_manage') }}" class="btn btn-outline">
+        <i class="fa-solid fa-arrow-left"></i> กลับหน้ารายการข่าว
+      </a>
+    </div>
+
+    <div class="card" style="max-width: 860px;">
+      <div class="card-body" style="padding: 2rem;">
+        <form method="POST" enctype="multipart/form-data">
+          <!-- 1. หัวข้อข่าว -->
+          <div class="form-group">
+            <label class="form-label" for="title">หัวข้อข่าว / ประกาศ *</label>
+            <input 
+              type="text" 
+              id="title" 
+              name="title" 
+              class="form-control" 
+              placeholder="เช่น โครงการ PawLove เปิดรับอาสาสมัคร..." 
+              value="{{ news.title if news else '' }}" 
+              required
+            >
+          </div>
+
+          <!-- 2. หมวดหมู่ -->
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="category">หมวดหมู่ข่าวสาร *</label>
+              <select id="category" name="category" class="form-control" required>
+                <option value="ข่าวประชาสัมพันธ์" {% if news and news.category == 'ข่าวประชาสัมพันธ์' %}selected{% endif %}>ข่าวประชาสัมพันธ์</option>
+                <option value="กิจกรรมโครงการ" {% if news and news.category == 'กิจกรรมโครงการ' %}selected{% endif %}>กิจกรรมโครงการ</option>
+                <option value="ผลการดำเนินงาน" {% if news and news.category == 'ผลการดำเนินงาน' %}selected{% endif %}>ผลการดำเนินงาน</option>
+                <option value="ความโปร่งใส & บริจาค" {% if news and news.category == 'ความโปร่งใส & บริจาค' %}selected{% endif %}>ความโปร่งใส & บริจาค</option>
+                <option value="ประกาศด่วน" {% if news and news.category == 'ประกาศด่วน' %}selected{% endif %}>ประกาศด่วน</option>
+              </select>
+            </div>
+
+            <!-- สถานะเผยแพร่ -->
+            <div class="form-group" style="display: flex; align-items: center; padding-top: 1.85rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="checkbox" name="is_published" value="1" {% if not news or news.is_published %}checked{% endif %} style="width: 18px; height: 18px; accent-color: var(--primary-orange);">
+                <strong style="color: #1e2229; font-size: 0.95rem;">เผยแพร่ทันที</strong>
+              </label>
+            </div>
+          </div>
+
+          <!-- 3. คำโปรยสั้นๆ -->
+          <div class="form-group">
+            <label class="form-label" for="summary">Summary</label>
+            <input 
+              type="text" 
+              id="summary" 
+              name="summary" 
+              class="form-control" 
+              placeholder="สรุปประเด็นข่าว 1-2 ประโยค เพื่อแสดงในการ์ดตัวอย่าง..." 
+              value="{{ news.summary if news else '' }}"
+            >
+          </div>
+
+          <!-- 4. เนื้อหาข่าวฉบับเต็ม -->
+          <div class="form-group">
+            <label class="form-label" for="content">เนื้อหาข่าวสารฉบับเต็ม *</label>
+            <textarea 
+              id="content" 
+              name="content" 
+              class="form-control" 
+              rows="8" 
+              placeholder="พิมพ์รายละเอียดข่าวสาร วัตถุประสงค์ ช่องทาง และข้อมูลที่ต้องการแจ้ง..." 
+              style="line-height: 1.6;" 
+              required
+            >{{ news.content if news else '' }}</textarea>
+          </div>
+
+          <!-- 5. รูปภาพประกอบข่าว (Choose File / URL) -->
+          <div class="form-group">
+            <label class="form-label">รูปภาพประกอบข่าวสาร</label>
+            <div style="border: 2px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 1.25rem; background: #fafbfc; text-align: center;">
+              <input 
+                type="file" 
+                id="news_image" 
+                name="news_image" 
+                class="form-control" 
+                accept="image/*" 
+                onchange="previewNewsImage(this)"
+                style="margin-bottom: 0.5rem;"
+              >
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                <i class="fa-solid fa-cloud-arrow-up"></i> เลือกไฟล์ภาพจากเครื่อง (รองรับทุกนามสกุลไฟล์ ไม่จำกัดขนาด)
+              </div>
+              <input 
+                type="text" 
+                name="image_url" 
+                class="form-control" 
+                placeholder="หรือใส่ลิงก์รูปภาพ (Image URL) เช่น https://..." 
+                value="{{ news.image_url if news else '' }}"
+              >
+
+              <!-- พรีวิวรูปภาพ -->
+              <div id="imagePreviewWrap" style="margin-top: 1rem; display: none;">
+                <img id="imagePreview" src="{{ news.image_url if news else '' }}" style="max-height: 220px; max-width: 100%; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 2rem;">
+            <a href="{{ url_for('admin.news_manage') }}" class="btn btn-outline">ยกเลิก</a>
+            <button type="submit" class="btn btn-orange" style="padding: 0.75rem 2rem;">
+              <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลข่าวสาร
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+function previewNewsImage(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = document.getElementById('imagePreview');
+      const wrap = document.getElementById('imagePreviewWrap');
+      img.src = e.target.result;
+      wrap.style.display = 'block';
+    }
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}จัดการคำคมและแบนเนอร์รูปสัตว์ - PawLove Admin{% endblock %}
+
+{% block content %}
+<div class="admin-layout-wrapper">
+  <!-- Sidebar ด้านซ้าย -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-brand">
+      <span>🐾</span> PawLove Admin
+    </div>
+    <ul class="admin-sidebar-menu">
+      <li class="admin-menu-item"><a href="{{ url_for('admin.dashboard') }}">📊 หน้าหลัก</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.pets_list') }}">🐕 จัดการน้องหมา/แมว</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.users_list') }}">👥 จัดการผู้ใช้</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.requests_list') }}">🔔 คำขอจากผู้ใช้</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.adoptions_list') }}">📋 คำขอรับเลี้ยง</a></li>
+      <li class="admin-menu-item active"><a href="{{ url_for('admin.quotes_list') }}">🖼️ คำคม & แบนเนอร์สไลด์</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.donations_list') }}">💰 ประวัติบริจาค & สลีป</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('admin.content_edit') }}">📝 จัดการเนื้อหาเว็บ</a></li>
+      <li class="admin-menu-item"><a href="{{ url_for('client.index') }}">🌐 กลับสู่หน้าเว็บ</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content Area ด้านขวา -->
+  <main class="admin-content-area">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h1 style="font-size: 1.5rem; font-weight: 800; color: #1e2229;">
+          จัดการคำคมและรูปภาพสไลด์เคลื่อนไหว (Quotes & Slider Images)
+        </h1>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          ปรับแต่งรูปภาพและคำคมสร้างแรงบันดาลใจที่จะแสดงบนหน้าแรกของเว็บไซต์ (ระบบสไลด์อัตโนมัติ)
+        </p>
+      </div>
+      <button onclick="document.getElementById('addQuoteCard').scrollIntoView({behavior: 'smooth'})" class="btn btn-orange">
+        + เพิ่มรูปภาพและคำคมใหม่
+      </button>
+    </div>
+
+    <!-- รายการคำคมทั้งหมดที่มีในระบบ -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: #1e2229;">
+          รายการคำคมและรูปภาพในแบนเนอร์ปัจจุบัน ({{ quotes|length }} รายการ)
+        </h3>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">เรียงตามลำดับการแสดงผล</span>
+      </div>
+      <div class="card-body">
+        {% if quotes %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {% for q in quotes %}
+          <div style="display: flex; gap: 1.25rem; padding: 1.25rem; background: var(--bg-body); border-radius: var(--radius-sm); border: 1px solid var(--border-light); align-items: center; flex-wrap: wrap;">
+            <!-- รูป Thumbnail -->
+            <div style="width: 120px; height: 85px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #000; position: relative;">
+              <img src="{{ q.image_url }}" alt="quote image" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800'">
+              <span style="position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.7); color: white; font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700;">
+                ลำดับ: {{ q.sort_order }}
+              </span>
+            </div>
+
+            <!-- ข้อความคำคมและผู้เขียน -->
+            <div style="flex: 1; min-width: 260px;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                <span class="pill-badge {% if q.is_active == 1 %}pill-green{% else %}pill-purple{% endif %}" style="font-size: 0.75rem;">
+                  {{ 'กำลังแสดงผล' if q.is_active == 1 else 'ปิดการแสดงผล' }}
+                </span>
+                <strong style="color: #1e2229; font-size: 0.95rem;">ลำดับที่ {{ q.sort_order }}</strong>
+                <span style="font-size: 0.8rem; color: var(--text-light);">— {{ q.author or 'PawLove' }}</span>
+              </div>
+              <p style="font-size: 0.925rem; font-weight: 600; color: #1e293b; margin: 0 0 0.25rem 0; line-height: 1.4;">
+                "{{ q.quote_text }}"
+              </p>
+              {% if q.sub_text %}
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
+                {{ q.sub_text }}
+              </p>
+              {% endif %}
+            </div>
+
+            <!-- ปุ่มการจัดการ -->
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <!-- ปุ่มสลับสถานะเปิด/ปิด -->
+              <form method="POST" action="{{ url_for('admin.quote_toggle', quote_id=q.id) }}" style="margin: 0;">
+                <button type="submit" class="btn btn-outline btn-sm" style="font-size: 0.775rem;">
+                  {{ '⏸️ ปิดใช้งาน' if q.is_active == 1 else '▶️ เปิดใช้งาน' }}
+                </button>
+              </form>
+
+              <!-- ปุ่มเปิดฟอร์มแก้ไข -->
+              <button type="button" class="btn btn-outline btn-sm" style="font-size: 0.775rem;" onclick="toggleEditForm('edit_form_{{ q.id }}')">
+                ✏️ แก้ไข
+              </button>
+
+              <!-- ปุ่มลบ -->
+              <form method="POST" action="{{ url_for('admin.quote_delete', quote_id=q.id) }}" style="margin: 0;" onsubmit="return confirm('ยืนยันที่จะลบรูปและคำคมนี้ใช่หรือไม่?')">
+                <button type="submit" class="btn btn-sm" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; font-size: 0.775rem;">
+                  🗑️ ลบ
+                </button>
+              </form>
+            </div>
+
+            <!-- กล่องแบบฟอร์มแก้ไข (ซ่อนไว้และเปิดเมื่อกดแก้ไข) -->
+            <div id="edit_form_{{ q.id }}" style="display: none; width: 100%; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border-light);">
+              <form method="POST" action="{{ url_for('admin.quote_edit', quote_id=q.id) }}" enctype="multipart/form-data">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                  <div class="form-group">
+                    <label class="form-label">คำคม / ข้อความหลัก *</label>
+                    <textarea name="quote_text" class="form-control" rows="2" required>{{ q.quote_text }}</textarea>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ข้อความขยายความ / คำบรรยายรอง</label>
+                    <textarea name="sub_text" class="form-control" rows="2">{{ q.sub_text }}</textarea>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 0.75rem;">
+                  <div class="form-group">
+                    <label class="form-label">ชื่อผู้เขียน / แหล่งที่มา</label>
+                    <input type="text" name="author" class="form-control" value="{{ q.author }}">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ลำดับการแสดงผล</label>
+                    <input type="number" name="sort_order" class="form-control" value="{{ q.sort_order }}">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">เปลี่ยนรูปภาพ (Choose File)</label>
+                    <input type="file" name="quote_image" class="form-control" accept="image/*">
+                    <input type="hidden" name="image_url" value="{{ q.image_url }}">
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem;">
+                  <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+                    <input type="checkbox" name="is_active" value="1" {% if q.is_active == 1 %}checked{% endif %}>
+                    เปิดใช้งานบนหน้าแรก
+                  </label>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="toggleEditForm('edit_form_{{ q.id }}')">ยกเลิก</button>
+                    <button type="submit" class="btn btn-orange btn-sm">บันทึกการแก้ไข</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="text-align: center; color: var(--text-muted); padding: 2rem;">
+          ยังไม่มีข้อมูลคำคมในระบบ กรุณาเพิ่มคำคมและรูปภาพใหม่ด้านล่าง
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- แบบฟอร์มเพิ่มรูปภาพและคำคมใหม่ -->
+    <div id="addQuoteCard" class="card" style="padding: 1.75rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: #1e2229; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        ➕ เพิ่มรูปภาพและคำคมใหม่สำหรับสไลด์หน้าแรก
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+        สามารถอัปโหลดรูปภาพจากอุปกรณ์โดยตรง (Choose File) ไม่จำกัดนามสกุลไฟล์
+      </p>
+
+      <form method="POST" action="{{ url_for('admin.quote_add') }}" enctype="multipart/form-data">
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem;">
+          <div>
+            <div class="form-group">
+              <label class="form-label" for="quote_text">ข้อความคำคมสร้างแรงบันดาลใจ *</label>
+              <textarea id="quote_text" name="quote_text" class="form-control" rows="3" placeholder="เช่น ทุกการช่วยเหลือ คือโอกาสที่น้อง ๆ จะได้มีชีวิตใหม่..." required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="sub_text">ข้อความขยายความ / บริบทเสริม</label>
+              <textarea id="sub_text" name="sub_text" class="form-control" rows="2" placeholder="เช่น PawLove - ปลอดภัย โปร่งใส เพื่อสัตว์ทุกตัวจะได้รับความช่วยเหลือ"></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label" for="author">ชื่อผู้เขียน / แหล่งที่มา</label>
+                <input type="text" id="author" name="author" class="form-control" placeholder="เช่น PawLove Community" value="PawLove Community">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="sort_order">ลำดับการแสดงผล (เรียงจากน้อยไปมาก)</label>
+                <input type="number" id="sort_order" name="sort_order" class="form-control" value="{{ (quotes|length) + 1 }}">
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="form-group">
+              <label class="form-label">เลือกรูปภาพสัตว์ (Choose File) *</label>
+              <input type="file" id="quote_image" name="quote_image" class="form-control" accept="image/*" onchange="previewBannerImage(this)">
+              <span style="font-size: 0.775rem; color: var(--text-light); display: block; margin-top: 0.25rem;">
+                รองรับไฟล์ภาพทุกนามสกุล (JPG, PNG, WEBP, AVIF ฯลฯ)
+              </span>
+            </div>
+
+            <!-- หรือระบุ URL -->
+            <div class="form-group">
+              <label class="form-label" for="image_url">หรือระบุลิงก์รูปภาพ (Image URL)</label>
+              <input type="url" id="image_url" name="image_url" class="form-control" placeholder="https://images.unsplash.com/...">
+            </div>
+
+            <!-- กล่องพรีวิวรูปภาพ -->
+            <div id="bannerPreviewContainer" style="width: 100%; height: 140px; border-radius: var(--radius-sm); border: 1.5px dashed var(--border-subtle); display: flex; align-items: center; justify-content: center; background: #fafbfc; overflow: hidden; margin-top: 0.5rem;">
+              <img id="bannerPreviewImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+              <span id="bannerPreviewText" style="font-size: 0.8rem; color: var(--text-light);">ตัวอย่างรูปภาพจะแสดงที่นี่</span>
+            </div>
+
+            <div class="form-check" style="margin-top: 1rem;">
+              <input type="checkbox" id="is_active" name="is_active" value="1" checked>
+              <label for="is_active" style="font-size: 0.885rem; font-weight: 600; cursor: pointer;">
+                เปิดใช้งานและแสดงบนหน้าแรกทันที
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: right;">
+          <button type="submit" class="btn btn-orange btn-lg" style="padding: 0.75rem 2rem;">
+            + บันทึกคำคมและรูปภาพใหม่
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script>
+function toggleEditForm(formId) {
+  const form = document.getElementById(formId);
+  if (form) {
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+function previewBannerImage(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const img = document.getElementById('bannerPreviewImg');
+      const text = document.getElementById('bannerPreviewText');
+      if (img && text) {
+        img.src = e.target.result;
+        img.style.display = 'block';
+        text.style.display = 'none';
+      }
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

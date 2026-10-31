@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}รายชื่อผู้ใช้และจัดการบัญชี - ผู้ดูแลระบบ PawLove{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div style="margin-bottom: 2rem;">
+    <span class="admin-menu-badge">👥 ข้อกำหนดที่ 2 & 5 (เมนูที่ 9)</span>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-dark); margin-top: 0.3rem;">
+      รายชื่อผู้ใช้ในระบบ (User Management)
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      (ข้อกำหนดที่ 2: แอดมินสามารถแก้ไขหรือจัดการบัญชีผู้ใช้รายอื่นได้ทั้งหมด)
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding: 0; overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+        <thead>
+          <tr style="background: #f8fafc; border-bottom: 1px solid var(--border-color); color: #475569;">
+            <th style="padding: 1rem 1.25rem;">ID</th>
+            <th style="padding: 1rem 1.25rem;">ชื่อ-นามสกุล</th>
+            <th style="padding: 1rem 1.25rem;">อีเมล</th>
+            <th style="padding: 1rem 1.25rem;">บทบาทสิทธิ์ (Role)</th>
+            <th style="padding: 1rem 1.25rem;">วันที่สมัครสมาชิก</th>
+            <th style="padding: 1rem 1.25rem; text-align: right;">การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr style="border-bottom: 1px solid var(--border-color); vertical-align: middle;">
+            <td style="padding: 1rem 1.25rem; font-weight: 600; color: #64748b;">#{{ u.id }}</td>
+            <td style="padding: 1rem 1.25rem; font-weight: 600; color: var(--text-dark);">{{ u.fullname }}</td>
+            <td style="padding: 1rem 1.25rem; color: #334155;">{{ u.email }}</td>
+            <td style="padding: 1rem 1.25rem;">
+              {% if u.role == 'admin' %}
+                <span class="admin-menu-badge" style="background: #0284c7;">🛡️ ผู้ดูแลระบบ (Admin)</span>
+              {% else %}
+                <span class="status-badge" style="background: #f1f5f9; color: #475569;">👤 ผู้ใช้ทั่วไป (User)</span>
+              {% endif %}
+            </td>
+            <td style="padding: 1rem 1.25rem; font-size: 0.85rem; color: #64748b;">{{ u.created_at }}</td>
+            <td style="padding: 1rem 1.25rem; text-align: right;">
+              <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <!-- ปุ่มแก้ไขข้อมูลผู้ใช้ (ข้อกำหนดที่ 2) -->
+                <a href="{{ url_for('admin.user_edit', user_id=u.id) }}" class="btn btn-outline-primary btn-sm">
+                  ✏️ แก้ไขข้อมูล
+                </a>
+
+                <!-- ปุ่มลบผู้ใช้ (ข้อกำหนดที่ 2) -->
+                {% if u.id != session.get('user_id') %}
+                <form method="POST" action="{{ url_for('admin.user_delete', user_id=u.id) }}" onsubmit="return confirm('ยืนยันที่จะลบบัญชีผู้ใช้ {{ u.fullname }} ({{ u.email }}) หรือไม่?');" style="display: inline;">
+                  <button type="submit" class="btn btn-danger btn-sm">
+                    🗑️ ลบ
+                  </button>
+                </form>
+                {% else %}
+                <span style="font-size: 0.8rem; color: #94a3b8; padding: 0.35rem;">(บัญชีคุณ)</span>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

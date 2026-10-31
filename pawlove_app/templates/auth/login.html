@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}เข้าสู่ระบบผู้ใช้งาน - มูลนิธิ PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 520px; padding-top: 3.5rem; padding-bottom: 4rem;">
+  <div class="card card-official" style="border-top: 4px solid var(--primary-orange);">
+    <div class="card-body" style="padding: 2.5rem 2rem;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PawLove Logo" style="height: 85px; width: auto; margin-bottom: 0.5rem;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: #1e2229; margin-top: 0.35rem; letter-spacing: -0.02em;">
+          เข้าสู่ระบบผู้ใช้งาน
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+          PAWLOVE USER PORTAL
+        </p>
+      {% if deleted_reason %}
+      <div style="background: #fef2f2; border: 1.5px solid #f87171; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; color: #991b1b;">
+        <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem;">
+          <i class="fa-solid fa-triangle-exclamation" style="color: #dc2626;"></i> แจ้งเตือน: บัญชีผู้ใช้นี้ถูกลบ/ระงับการใช้งาน
+        </div>
+        <p style="font-size: 0.885rem; line-height: 1.5; margin: 0; color: #7f1d1d;">
+          <strong>เหตุผลที่ระบุโดยแอดมิน:</strong> {{ deleted_reason }}
+        </p>
+      </div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('auth.login') }}">
+        <!-- 1. อีเมล -->
+        <div class="form-group">
+          <label class="form-label" for="email">อีเมล (E-Mail Address) *</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            class="form-control" 
+            placeholder="example@mail.com" 
+            value="{{ email or '' }}" 
+            required
+            autofocus
+          >
+        </div>
+
+        <!-- 2. รหัสผ่าน -->
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label class="form-label" for="password" style="margin-bottom: 0;">รหัสผ่าน (Password) *</label>
+            <a href="{{ url_for('auth.forgot_password') }}" style="font-size: 0.8rem; color: var(--primary-orange); text-decoration: none; font-weight: 600;">
+              ลืมรหัสผ่าน?
+            </a>
+          </div>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            class="form-control" 
+            placeholder="••••••••" 
+            required
+          >
+        </div>
+
+        <!-- 3. ยืนยันรหัสผ่าน (ตามข้อกำหนดที่ 8) -->
+        <div class="form-group">
+          <label class="form-label" for="confirm_password">ยืนยันรหัสผ่าน (Confirm Password) *</label>
+          <input 
+            type="password" 
+            id="confirm_password" 
+            name="confirm_password" 
+            class="form-control" 
+            placeholder="กรอกรหัสผ่านซ้ำอีกครั้ง" 
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn btn-orange" style="width: 100%; margin-top: 1rem; padding: 0.85rem; font-weight: 700; font-size: 1rem;">
+          เข้าสู่ระบบ
+        </button>
+      </form>
+
+      <!-- ส่วนลิงก์สมัครสมาชิก และ ลิงก์เข้าสู่ระบบแอดมิน -->
+      <div style="margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.85rem; text-align: center; font-size: 0.9rem;">
+        <div>
+          ยังไม่มีบัญชีผู้ใช้งาน? 
+          <a href="{{ url_for('auth.register') }}" style="color: var(--primary); font-weight: 700; text-decoration: none;">
+            สมัครสมาชิกที่นี่
+          </a>
+        </div>
+        <div style="background: var(--slate-50); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid #cbd5e1;">
+          <span style="color: var(--slate-600); font-size: 0.825rem; font-weight: 600;">สำหรับเจ้าหน้าที่และผู้ดูแลระบบมูลนิธิ:</span><br>
+          <a href="{{ url_for('auth.admin_direct_access') }}" style="color: var(--gold-600); font-weight: 700; text-decoration: none; font-size: 0.925rem; display: inline-block; margin-top: 0.25rem;">
+            <i class="fa-solid fa-shield-halved" style="margin-right: 0.35rem;"></i> เข้าสู่ระบบผู้ดูแลระบบ (Admin Login พร้อมรหัสผ่าน)
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

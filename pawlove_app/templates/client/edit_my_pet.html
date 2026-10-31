@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}ขอยื่นแก้ไขข้อมูลสัตว์: {{ pet.name }} - PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; padding-top: 1.5rem; padding-bottom: 3.5rem;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('client.my_pets') }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.95rem;">
+      <i class="fa-solid fa-arrow-left" style="margin-right: 0.35rem;"></i> กลับไปยังสัตว์ของฉัน
+    </a>
+  </div>
+
+  <div class="card" style="border-top: 5px solid var(--secondary);">
+    <div class="card-body" style="padding: 2.5rem 2rem;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="width: 56px; height: 56px; background: rgba(30,58,138,0.08); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.5rem;"><i class="fa-solid fa-pen-to-square" style="font-size: 1.85rem; color: var(--primary);"></i></div>
+        <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-top: 0.5rem;">
+          ขอยื่นแก้ไขข้อมูลสัตว์: {{ pet.name }}
+        </h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.3rem;">
+          (ข้อกำหนดที่ 2: การแก้ไขข้อมูลจากผู้ใช้ต้องส่งคำขอไปให้แอดมินอนุมัติก่อน)
+        </p>
+      </div>
+
+      <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; font-size: 0.9rem; color: #1e40af;">
+        <i class="fa-solid fa-circle-info" style="margin-right: 0.35rem;"></i> เมื่อท่านกดบันทึก ข้อมูลใหม่จะถูกส่งเป็นคำขอไปยังแอดมิน ข้อมูลเดิมบนหน้าเว็บจะยังคงอยู่จนกว่าแอดมินจะตรวจสอบและกดอนุมัติ
+      </div>
+
+      <form method="POST" action="{{ url_for('client.request_edit_pet', pet_id=pet.id) }}" enctype="multipart/form-data">
+        <!-- ชนิดสัตว์ & เพศ -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="species">ชนิดของสัตว์ *</label>
+            <select id="species" name="species" class="form-control" required>
+              <option value="สุนัข" {% if pet.species == 'สุนัข' %}selected{% endif %}>สุนัข (Dog)</option>
+              <option value="แมว" {% if pet.species == 'แมว' %}selected{% endif %}>แมว (Cat)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="gender">เพศ *</label>
+            <select id="gender" name="gender" class="form-control" required>
+              <option value="เพศผู้" {% if pet.gender == 'เพศผู้' %}selected{% endif %}>เพศผู้</option>
+              <option value="เพศเมีย" {% if pet.gender == 'เพศเมีย' %}selected{% endif %}>เพศเมีย</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ชื่อ & สายพันธุ์ -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="name">ชื่อของสัตว์ *</label>
+            <input type="text" id="name" name="name" class="form-control" value="{{ pet.name }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="breed">สายพันธุ์ *</label>
+            <input type="text" id="breed" name="breed" class="form-control" value="{{ pet.breed }}" required>
+          </div>
+        </div>
+
+        <!-- อายุ (ปี และ เดือน) -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="age_years">อายุ (จำนวนปี) *</label>
+            <input type="number" id="age_years" name="age_years" class="form-control" min="0" max="30" value="{{ pet.age_years }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="age_months">อายุ (จำนวนเดือน) *</label>
+            <input type="number" id="age_months" name="age_months" class="form-control" min="0" max="11" value="{{ pet.age_months }}" required>
+          </div>
+        </div>
+
+        <!-- ชื่อผู้ดูแล & ที่อยู่ปัจจุบัน -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="caretaker_name">ชื่อผู้ดูแลในปัจจุบัน *</label>
+            <input type="text" id="caretaker_name" name="caretaker_name" class="form-control" value="{{ pet.caretaker_name }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="current_address">ที่อยู่ของสัตว์ในปัจจุบัน *</label>
+            <input type="text" id="current_address" name="current_address" class="form-control" value="{{ pet.current_address }}" required>
+          </div>
+        </div>
+
+        <!-- สถานะของสัตว์ -->
+        <div class="form-group">
+          <label class="form-label" for="status">สถานะของสัตว์ปัจจุบัน *</label>
+          <select id="status" name="status" class="form-control" onchange="toggleDonationTarget()" required>
+            <option value="กำลังหาบ้าน" {% if 'กำลังหาบ้าน' in pet.status or 'สุขภาพดี' in pet.status %}selected{% endif %}>กำลังหาบ้าน</option>
+            <option value="กำลังอยู่ระหว่างการรักษา" {% if 'รักษา' in pet.status %}selected{% endif %}>กำลังอยู่ระหว่างการรักษา</option>
+            <option value="รอรับการช่วยเหลือ" {% if 'รอรับการช่วยเหลือ' in pet.status %}selected{% endif %}>รอรับการช่วยเหลือ</option>
+            <option value="หาบ้านได้แล้ว" {% if 'หาบ้านได้แล้ว' in pet.status %}selected{% endif %}>หาบ้านได้แล้ว</option>
+          </select>
+          <small style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem; display: block;">
+            * หมายเหตุ: หากเลือกสถานะ "กำลังอยู่ระหว่างการรักษา" หรือ "รอรับการช่วยเหลือ" สามารถกำหนดยอดบริจาคได้
+          </small>
+        </div>
+
+        <!-- ยอดบริจาคเป้าหมาย -->
+        <div id="donationTargetGroup" class="form-group" style="display: none; background: #fff7ed; padding: 1.25rem; border-radius: 8px; border: 1.5px solid #fed7aa;">
+          <label class="form-label" for="donation_target" style="color: #9a3412; font-weight: 700;">
+            <i class="fa-solid fa-hand-holding-dollar" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> กำหนดยอดบริจาคที่ต้องการรับ (บาท) *
+          </label>
+          <input 
+            type="number" 
+            id="donation_target" 
+            name="donation_target" 
+            class="form-control" 
+            placeholder="เช่น 5000" 
+            min="0" 
+            step="100" 
+            value="{{ pet.donation_target or 5000 }}"
+            style="background: white;"
+          >
+        </div>
+
+        <!-- รูปภาพของสัตว์ (Choose File) -->
+        <div class="form-group">
+          <label class="form-label" for="pet_image"><i class="fa-solid fa-image" style="margin-right: 0.35rem; color: var(--primary-orange);"></i> รูปภาพของสัตว์ (Choose File - เลือกไฟล์ใหม่)</label>
+          <div style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 1.25rem; background: #f8fafc;">
+            <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+              {% if pet.image_url %}
+              <div>
+                <span style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 0.3rem;">รูปภาพปัจจุบัน:</span>
+                <img src="{{ pet.image_url }}" alt="{{ pet.name }}" style="width: 140px; height: 140px; object-fit: cover; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
+              </div>
+              {% endif %}
+              <div style="flex: 1; min-width: 220px;">
+                <input 
+                  type="file" 
+                  id="pet_image" 
+                  name="pet_image" 
+                  class="form-control" 
+                  accept="image/*, *" 
+                  onchange="previewPetImage(this)"
+                  style="margin-bottom: 0.5rem; cursor: pointer; background: white;"
+                >
+                <div style="font-size: 0.825rem; color: var(--text-muted);">
+                  <i class="fa-solid fa-circle-info" style="margin-right: 0.25rem;"></i> รองรับไฟล์รูปภาพความละเอียดสูงทุกขนาดสูงสุด 100 MB และทุกนามสกุล (หากไม่ต้องการเปลี่ยนรูป ให้เว้นว่างไว้ ระบบจะใช้รูปเดิม)
+                </div>
+                <div id="selectedFileName" style="margin-top: 0.35rem; font-size: 0.85rem; font-weight: 600; color: var(--primary-orange);"></div>
+              </div>
+            </div>
+            <div id="imagePreviewContainer" style="margin-top: 1rem; display: none; text-align: left;">
+              <span style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 0.3rem;">ภาพตัวอย่างไฟล์ใหม่ที่เลือก (ขนาดใหญ่):</span>
+              <img id="imagePreview" src="" alt="ภาพตัวอย่างใหม่" style="max-width: 440px; max-height: 380px; width: 100%; object-fit: contain; border-radius: 8px; border: 2px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+            </div>
+          </div>
+        </div>
+
+        <!-- รายละเอียดของสัตว์ -->
+        <div class="form-group">
+          <label class="form-label" for="description">รายละเอียดของสัตว์ *</label>
+          <textarea id="description" name="description" class="form-control" required>{{ pet.description }}</textarea>
+        </div>
+
+        <!-- รายละเอียดเพิ่มเติม -->
+        <div class="form-group">
+          <label class="form-label" for="extra_details">รายละเอียดของสัตว์เพิ่มเติม</label>
+          <textarea id="extra_details" name="extra_details" class="form-control">{{ pet.extra_details }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-lg" style="width: 100%; margin-top: 1rem;">
+          <i class="fa-solid fa-paper-plane" style="margin-right: 0.35rem;"></i> ยื่นคำขอแก้ไขข้อมูลให้แอดมินอนุมัติ
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleDonationTarget() {
+  const statusSelect = document.getElementById('status');
+  const targetGroup = document.getElementById('donationTargetGroup');
+  if (!statusSelect || !targetGroup) return;
+  const val = statusSelect.value || '';
+  if (val.includes('รักษา') || val.includes('รอรับการช่วยเหลือ') || val.includes('รอ')) {
+    targetGroup.style.display = 'block';
+  } else {
+    targetGroup.style.display = 'none';
+  }
+}
+document.addEventListener('DOMContentLoaded', toggleDonationTarget);
+</script>
+{% endblock %}

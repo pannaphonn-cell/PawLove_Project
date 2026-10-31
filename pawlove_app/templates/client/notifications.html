@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}แจ้งเตือนข่าวสาร การอัปเดต และการอนุมัติ - PawLove{% endblock %}
+
+{% block content %}
+<style>
+  .notif-card--success {
+    background: #f0fdf4;
+  }
+
+  .notif-card--danger {
+    background: #fef2f2;
+  }
+
+  .notif-card--default {
+    background: #ffffff;
+  }
+</style>
+
+<div class="container" style="max-width: 820px; padding-top: 1.5rem; padding-bottom: 3.5rem;">
+  <div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-dark);">
+      <i class="fa-solid fa-bell" style="color: var(--primary-orange); margin-right: 0.35rem;"></i> แจ้งเตือนข่าวสาร การอัปเดต และการอนุมัติ
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      (ติดตามข่าวสารโครงการ และผลการอนุมัติคำขอจากแอดมิน)
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding: 1.5rem;">
+      {% if notifications %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {% for notif in notifications %}
+          <div class="{% if 'อนุมัติ' in notif.title %}notif-card--success{% elif 'ไม่ผ่าน' in notif.title or 'ปฏิเสธ' in notif.title or 'ระงับ' in notif.title %}notif-card--danger{% else %}notif-card--default{% endif %}"
+               style="padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem; gap: 1rem;">
+              <h4 style="font-size: 1.1rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+                {% if 'อนุมัติ' in notif.title %}
+                  <i class="fa-solid fa-circle-check" style="color: #16a34a;"></i> {{ notif.title }}
+                {% elif 'ไม่ผ่าน' in notif.title or 'ปฏิเสธ' in notif.title or 'ระงับ' in notif.title %}
+                  <i class="fa-solid fa-circle-xmark" style="color: #dc2626;"></i> {{ notif.title }}
+                {% else %}
+                  <i class="fa-solid fa-bullhorn" style="color: var(--primary-orange);"></i> {{ notif.title }}
+                {% endif %}
+              </h4>
+              <span style="font-size: 0.8rem; color: #94a3b8; white-space: nowrap;">
+                {{ notif.created_at }}
+              </span>
+            </div>
+            <p style="color: #475569; font-size: 0.95rem; line-height: 1.6;">
+              {{ notif.message }}
+            </p>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+          <span style="font-size: 2.5rem; color: #94a3b8;"><i class="fa-regular fa-bell-slash"></i></span>
+          <p style="margin-top: 0.5rem; font-size: 1rem;">ไม่มีการแจ้งเตือนใหม่ในขณะนี้</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

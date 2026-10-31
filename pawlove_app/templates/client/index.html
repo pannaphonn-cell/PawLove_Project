@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block title %}PawLove - ร่วมเป็นส่วนหนึ่ง ในการเปลี่ยนชีวิตน้องหมา น้องแมว ให้ดีขึ้นได้{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 0.5rem;">
+  <!-- ==================== หน้าหลัก ==================== -->
+  <section class="hero-pawcare">
+    <div class="hero-content-grid">
+      <div>
+        <div class="hero-tag">
+          <i class="fa-solid fa-paw"></i> <span>PawLove เพราะทุกชีวิต มีคุณค่า</span>
+        </div>
+        <h1>
+          ร่วมเป็นส่วนหนึ่งในการเปลี่ยนชีวิต<br>
+          น้องหมา น้องแมว ให้ดีขึ้นได้<br>
+        </h1>
+        <p>
+          PawLove คือแพลตฟอร์มช่วยเหลือสัตว์จรจัดและสัตว์ที่ต้องการความช่วยเหลือ โดยเปิดโอกาสให้ทุกคนได้มีส่วนร่วม สนับสนุนการรักษา และหาบ้านใหม่ให้กับน้อง ๆ เพื่อให้พวกเขามีชีวิตที่ดีขึ้นอย่างยั่งยืน
+        </p>
+        <div style="display: flex; gap: 0.85rem; flex-wrap: wrap;">
+          <a href="{{ url_for('client.donate') }}" class="btn btn-orange btn-lg">
+            บริจาคตอนนี้ <i class="fa-solid fa-arrow-right" style="margin-left: 0.35rem;"></i>
+          </a>
+          <a href="{{ url_for('client.about') }}" class="btn btn-outline" style="background: rgba(255,255,255,0.1); color: white; border-color: rgba(255,255,255,0.25);">
+            ดูรายละเอียดเพิ่มเติม
+          </a>
+        </div>
+      </div>
+
+      <!-- รูปปกใหญ่-->
+      <div class="hero-image-box">
+        <img src="static/uploads/pets/Golden Hour Animal Feeding.png" alt="น้องหมาและน้องแมว PawLove">
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 2. Summary Stats (3 กล่องสถิติสไตล์ PawCare) ==================== -->
+  <section class="stats-summary-grid">
+    <!-- กล่อง 1: ยอดบริจาครวม -->
+    <div class="stat-card">
+      <div class="stat-icon-circle stat-icon-orange">
+        <i class="fa-solid fa-hand-holding-heart"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">ยอดบริจาครวมทั้งหมด</div>
+        <div class="stat-value" style="color: var(--primary-orange);">฿ 125,500</div>
+        <div class="stat-sub">(จาก 320 รายการระดมทุน)</div>
+      </div>
+    </div>
+
+    <!-- กล่อง 2: น้องที่ได้รับความช่วยเหลือ -->
+    <div class="stat-card">
+      <div class="stat-icon-circle stat-icon-teal">
+        <i class="fa-solid fa-notes-medical"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">น้องที่ได้รับความช่วยเหลือ</div>
+        <div class="stat-value" style="color: #10b981;">48 ตัว</div>
+        <div class="stat-sub">(กำลังรักษา / ฟื้นฟูสุขภาพ)</div>
+      </div>
+    </div>
+
+    <!-- กล่อง 3: น้องที่รอบ้าน -->
+    <div class="stat-card">
+      <div class="stat-icon-circle stat-icon-pink">
+        <i class="fa-solid fa-house-chimney-window"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">น้องที่กำลังรอบ้านใหม่</div>
+        <div class="stat-value" style="color: #ec4899;">12 ตัว</div>
+        <div class="stat-sub">(รอการอุปการะจากครอบครัว)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 3. โซนการ์ดสัตว์ "น้องหมา น้องแมวที่ต้องการความช่วยเหลือ" ==================== -->
+  <section style="margin-bottom: 3.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h2 style="font-size: 1.45rem; font-weight: 800; color: #1e2229;">
+        น้องหมา น้องแมวที่ต้องการความช่วยเหลือ
+      </h2>
+      <a href="{{ url_for('client.adopt') }}" style="color: var(--text-muted); font-size: 0.885rem; text-decoration: none; font-weight: 600;">
+        ดูทั้งหมด <i class="fa-solid fa-chevron-right" style="font-size: 0.8rem;"></i>
+      </a>
+    </div>
+
+    <div class="grid-4">
+      {% for pet in featured_pets %}
+      <div class="pet-card">
+        <div class="pet-card-image">
+          <img src="{{ pet.image_url }}" alt="{{ pet.name }}" onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800'">
+        </div>
+        <div class="pet-card-body">
+          <div class="pet-card-header">
+            <h3 class="pet-title">{{ pet.name }}</h3>
+            <!-- Pill Badges -->
+            {% if 'รักษา' in pet.status %}
+              <span class="pill-badge pill-orange">กำลังรักษา</span>
+            {% elif 'รอ' in pet.status %}
+              <span class="pill-badge pill-yellow">รอช่วยเหลือ</span>
+            {% elif 'กำลังหาบ้าน' in pet.status or 'สุขภาพดี' in pet.status %}
+              <span class="pill-badge pill-green">กำลังหาบ้าน</span>
+            {% elif 'หาบ้านได้แล้ว' in pet.status %}
+              <span class="pill-badge pill-purple">หาบ้านได้แล้ว</span>
+            {% else %}
+              <span class="pill-badge pill-green">กำลังหาบ้าน</span>
+            {% endif %}
+          </div>
+
+          <div class="pet-meta-info">
+            <p><i class="fa-regular fa-clock" style="color: var(--primary-orange); width: 14px;"></i> อายุ: {{ pet.age_years }} ปี | เพศ: {{ pet.gender }}</p>
+            <p><i class="fa-solid fa-paw" style="color: var(--primary-orange); width: 14px;"></i> สายพันธุ์: {{ pet.breed }}</p>
+            <p><i class="fa-solid fa-location-dot" style="color: var(--primary-orange); width: 14px;"></i> ที่อยู่: {{ pet.current_address | truncate(35) }}</p>
+          </div>
+
+          <!-- หลอด Progress Bar ระดมทุนค่ารักษา (แสดงเฉพาะสัตว์ที่กำลังรักษาหรือรอรับการช่วยเหลือเท่านั้นตามข้อกำหนด) -->
+          {% if 'รักษา' in pet.status or 'รอ' in pet.status %}
+          <div class="donation-progress-wrap">
+            <div class="progress-labels">
+              <span class="progress-goal">
+                ฿ {{ "{:,.0f}".format(pet.donation_target if pet.donation_target and pet.donation_target > 0 else 5000) }} (เป้าหมาย)
+              </span>
+              <span class="progress-status">
+                {% if 'รักษา' in pet.status %}ระดมทุนเพื่อการรักษา{% else %}รอรับการช่วยเหลือ{% endif %}
+              </span>
+            </div>
+            <div class="progress-track">
+              {% if 'รักษา' in pet.status %}
+                <div class="progress-fill" style="width: 66%;"></div>
+              {% else %}
+                <div class="progress-fill" style="width: 35%;"></div>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          <div style="display: flex; gap: 0.4rem; margin-top: auto;">
+            <a href="{{ url_for('client.pet_detail', pet_id=pet.id) }}" class="btn btn-outline btn-sm" style="flex: 1;">
+              ดูประวัติ
+            </a>
+            {% if 'หาบ้านได้แล้ว' not in pet.status %}
+              {% if 'รักษา' in pet.status or 'รอรับการช่วยเหลือ' in pet.status %}
+              <a href="{{ url_for('client.donate', pet_id=pet.id) }}" class="btn btn-orange btn-sm" style="flex: 1.2;">
+                บริจาคช่วยน้อง
+              </a>
+              {% else %}
+              <a href="{{ url_for('client.adopt_application', pet_id=pet.id) }}" class="btn btn-orange btn-sm" style="flex: 1.2;">
+                ขอรับเลี้ยง <i class="fa-solid fa-heart" style="font-size: 0.75rem;"></i>
+              </a>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ==================== 4. ส่วนข่าวสารและกิจกรรมล่าสุด (Glassmorphism & Soft Fade) ==================== -->
+  <section style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 1.5rem; margin-bottom: 4rem; align-items: stretch;">
+    <!-- ด้านซ้าย: การ์ดข่าวสารภาพใหญ่ ดีไซน์โปร่งแสงแบบเฟดละมุนตา (Frosted Glass & Gradient Fade) -->
+    <div id="animatedNewsBanner" class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; position: relative; min-height: 420px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.7); box-shadow: 0 10px 30px rgba(0,0,0,0.06); background: #0f172a;">
+      
+      <!-- เลเยอร์ภาพพื้นหลังเต็มใบพร้อมเอฟเฟกต์เฟดนุ่มนวล -->
+      <div style="position: absolute; inset: 0; overflow: hidden;">
+        <img 
+          id="animatedNewsImg" 
+          src="static/uploads/pets/💛💛.jpg" 
+          alt="ข่าวสารและกิจกรรม PawLove" 
+          style="width: 100%; height: 100%; object-fit: cover; opacity: 0.95; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); transform: scale(1);"
+          onerror="this.src='https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=800'"
+        >
+        <!-- เลเยอร์เกรเดียนต์เฟดสีละมุน (Gradient Overlay Fade) จากด้านบนลงล่าง -->
+        <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,42,0.1) 0%, rgba(15,23,42,0.45) 50%, rgba(15,23,42,0.92) 100%);"></div>
+      </div>
+
+      <!-- ป้ายหมวดหมู่แบบกระจกโปร่งแสง (Glass Badge) ที่มุมซ้ายบน -->
+      <div style="position: relative; z-index: 2; padding: 1.25rem 1.5rem 0;">
+        <span id="newsSlideBadge" style="display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(255, 255, 255, 0.22); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #ffffff; font-size: 0.785rem; padding: 0.35rem 0.9rem; border-radius: 9999px; font-weight: 700; border: 1px solid rgba(255,255,255,0.35); box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+          <i class="fa-solid fa-tag" style="font-size: 0.7rem; color: #fed7aa;"></i> ข่าวประชาสัมพันธ์
+        </span>
+      </div>
+
+      <!-- ปุ่มเลื่อน ซ้าย - ขวา สไตล์โปร่งแสงมินิมอล (Glass Navigation Arrows) -->
+      <button type="button" onclick="prevNews()" aria-label="ข่าวก่อนหน้า" style="position: absolute; top: 40%; left: 16px; transform: translateY(-50%); z-index: 3; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #ffffff; border: 1px solid rgba(255,255,255,0.35); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.3rem; transition: all 0.25s;" onmouseover="this.style.background='rgba(255,255,255,0.4)'; this.style.transform='translateY(-50%) scale(1.08)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-50%) scale(1)'">
+        ‹
+      </button>
+      <button type="button" onclick="nextNews()" aria-label="ข่าวถัดไป" style="position: absolute; top: 40%; right: 16px; transform: translateY(-50%); z-index: 3; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #ffffff; border: 1px solid rgba(255,255,255,0.35); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.3rem; transition: all 0.25s;" onmouseover="this.style.background='rgba(255,255,255,0.4)'; this.style.transform='translateY(-50%) scale(1.08)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-50%) scale(1)'">
+        ›
+      </button>
+
+      <!-- แผงเนื้อหากระจกโปร่งแสงด้านล่าง (Frosted Glass Container with Smooth Fade) -->
+      <div style="position: relative; z-index: 2; margin-top: auto; padding: 1.5rem 1.75rem 1.4rem; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid rgba(255, 255, 255, 0.18);">
+        
+        <!-- วันที่และผู้เผยแพร่ สไตล์โมเดิร์น -->
+        <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.45rem; font-size: 0.8rem; color: #cbd5e1;">
+          <span id="animatedNewsDate" style="display: inline-flex; align-items: center; gap: 0.35rem; color: #fdba74; font-weight: 600;">
+            <i class="fa-regular fa-calendar-days"></i> ล่าสุด
+          </span>
+          <span style="opacity: 0.4;">•</span>
+          <span id="animatedNewsAuthor" style="opacity: 0.9;">โดย PawLove</span>
+        </div>
+
+        <!-- หัวข้อข่าวสาร (ตัวหนังสือสีขาวคมชัด อ่านง่าย นุ่มตา) -->
+        <h3 id="animatedNewsTitle" style="font-size: 1.35rem; font-weight: 800; line-height: 1.4; color: #ffffff; margin: 0 0 0.5rem 0; text-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: opacity 0.4s ease, transform 0.4s ease;">
+          อัปเดตกิจกรรมและข่าวสารมูลนิธิ PawLove
+        </h3>
+        
+        <!-- เนื้อหาสรุปย่อ แบบเฟดกลมกลืน -->
+        <p id="animatedNewsSummary" style="font-size: 0.92rem; color: #e2e8f0; line-height: 1.6; margin: 0 0 1rem 0; min-height: 44px; opacity: 0.92; text-shadow: 0 1px 4px rgba(0,0,0,0.3); transition: opacity 0.4s ease;">
+          ติดตามความเคลื่อนไหว กิจกรรมลงพื้นที่ และโครงการช่วยเหลือสัตว์จรจัดล่าสุด
+        </p>
+
+        <!-- แถบจุดเปลี่ยนข่าว (Pill Dots) กึ่งโปร่งแสง -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div id="newsDotsList" style="display: flex; gap: 0.45rem; align-items: center;">
+            {% for n in latest_news %}
+            <span class="news-dot {% if loop.index0 == 0 %}active{% endif %}" onclick="showNewsSlide({{ loop.index0 }})" style="display: inline-block; width: {% if loop.index0 == 0 %}28px{% else %}9px{% endif %}; height: 7px; border-radius: 4px; background: {% if loop.index0 == 0 %}#f97316{% else %}rgba(255,255,255,0.35){% endif %}; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+            {% endfor %}
+          </div>
+          <span style="font-size: 0.725rem; color: rgba(255,255,255,0.65); letter-spacing: 0.3px;">
+            <i class="fa-regular fa-clock" style="margin-right: 0.25rem;"></i>สไลด์อัตโนมัติ
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ข้อมูล JSON ของข่าวสารสำหรับ JavaScript -->
+    <script id="latestNewsData" type="application/json">
+      {{ latest_news_json | safe }}
+    </script>
+
+    <!-- ด้านขวา: รายการข่าวสารและกิจกรรมล่าสุด (กระจกโปร่งแสง นุ่มนวล สบายตา) -->
+    <div class="card" style="padding: 1.5rem 1.65rem; display: flex; flex-direction: column; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.9); box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; padding-bottom: 0.85rem; border-bottom: 1px solid rgba(226,232,240,0.7);">
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fa-solid fa-newspaper" style="color: var(--primary-orange);"></i> ข่าวสารและกิจกรรมล่าสุด
+        </h3>
+        <a href="{{ url_for('client.notifications') }}" style="color: #ea580c; font-size: 0.825rem; text-decoration: none; font-weight: 600; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">
+          ดูทั้งหมด <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i>
+        </a>
+      </div>
+
+      <!-- รายการข่าว: คลิกที่ชื่อเพื่อเปลี่ยนและดูรูป/เนื้อหาฝั่งซ้ายได้ทันที -->
+      <div style="display: flex; flex-direction: column; gap: 0.65rem; flex: 1;">
+        {% if latest_news %}
+          {% for n in latest_news[:5] %}
+          <div 
+            class="news-list-item {% if loop.index0 == 0 %}active-item{% endif %}" 
+            data-index="{{ loop.index0 }}"
+            onclick="showNewsSlide({{ loop.index0 }})" 
+            style="display: flex; gap: 0.85rem; cursor: pointer; align-items: center; padding: 0.7rem 0.85rem; border-radius: 12px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid {% if loop.index0 == 0 %}rgba(249,115,22,0.35){% else %}transparent{% endif %}; background: {% if loop.index0 == 0 %}rgba(255,247,237,0.95){% else %}rgba(255,255,255,0.4){% endif %}; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);" 
+            onmouseover="if(!this.classList.contains('active-item')) { this.style.background='rgba(255,247,237,0.5)'; this.style.transform='translateX(3px)'; }" 
+            onmouseout="if(!this.classList.contains('active-item')) { this.style.background='rgba(255,255,255,0.4)'; this.style.transform='translateX(0)'; }"
+            title="คลิกเพื่อดูข่าวนี้"
+          >
+            <div style="width: 58px; height: 52px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
+              <img src="{{ n.image_url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ n.title }}" onerror="this.src='https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=800'">
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <h4 class="news-item-title" style="font-size: 0.885rem; font-weight: 700; color: {% if loop.index0 == 0 %}#ea580c{% else %}#1e293b{% endif %}; line-height: 1.4; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.2s;">
+                {{ n.title }}
+              </h4>
+              <div style="display: flex; gap: 0.6rem; align-items: center; font-size: 0.725rem; color: #94a3b8;">
+                <span><i class="fa-regular fa-calendar" style="margin-right: 0.2rem;"></i>{{ n.created_at[:10] if n.created_at else 'ล่าสุด' }}</span>
+                <span style="background: rgba(241,245,249,0.9); color: #475569; padding: 0.12rem 0.45rem; border-radius: 4px; font-weight: 600;">{{ n.category or 'กิจกรรม' }}</span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align: center; color: var(--text-muted); padding: 2.5rem 0;">
+            <i class="fa-regular fa-newspaper" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 0.5rem;"></i>
+            <p style="margin: 0;">ยังไม่มีข่าวสารในขณะนี้</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 5. ภารกิจ 4 ด้านของโครงการ==================== -->
+  <section style="background: #ffffff; border-radius: var(--radius-md); padding: 2.5rem 2rem; border: 1px solid var(--border-light); margin-bottom: 3.5rem;">
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 2rem;">
+      <h3 style="font-size: 1.4rem; font-weight: 800; color: #1e2229;">
+        การทำงาน 4 ด้านของโครงการ PawLove
+      </h3>
+      <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">
+        มุ่งมั่นดูแลและฟื้นฟูสัตว์จรจัดให้ครบวงจรตั้งแต่การรักษาจนถึงส่งมอบสู่บ้านใหม่
+      </p>
+    </div>
+
+    <div class="grid-4">
+      <div style="padding: 1.25rem; background: #fffbf9; border-radius: var(--radius-sm); border: 1px solid #ffedd5;">
+        <div style="font-size: 1.75rem; margin-bottom: 0.5rem; color: #0284c7;"><i class="fa-solid fa-stethoscope"></i></div>
+        <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem; color: #1e2229;">1. ดูแลการรักษา</h4>
+        <p style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.6;">
+          {{ project_work.get('medical', 'ดูแลการรักษา: ให้การพยาบาลฟื้นฟูสัตว์ป่วยและบาดเจ็บอย่างเต็มความสามารถจนหายดี') }}
+        </p>
+      </div>
+
+      <div style="padding: 1.25rem; background: #fffbf9; border-radius: var(--radius-sm); border: 1px solid #ffedd5;">
+        <div style="font-size: 1.75rem; margin-bottom: 0.5rem; color: #16a34a;"><i class="fa-solid fa-scissors"></i></div>
+        <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem; color: #1e2229;">2. การทำหมัน</h4>
+        <p style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.6;">
+          {{ project_work.get('sterilization', 'การทำหมัน: ทำหมันและฉีดวัคซีนป้องกันโรคพิษสุนัขบ้าเพื่อควบคุมประชากรสัตว์จรอย่างยั่งยืน') }}
+        </p>
+      </div>
+
+      <div style="padding: 1.25rem; background: #fffbf9; border-radius: var(--radius-sm); border: 1px solid #ffedd5;">
+        <div style="font-size: 1.75rem; margin-bottom: 0.5rem; color: #dc2626;"><i class="fa-solid fa-truck-medical"></i></div>
+        <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem; color: #1e2229;">3. ช่วยเหลือฉุกเฉิน</h4>
+        <p style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.6;">
+          {{ project_work.get('emergency', 'การช่วยเหลือฉุกเฉิน: หน่วยกู้ภัยสัตว์กรณีได้รับอุบัติเหตุหรือตกอยู่ในภาวะอันตรายเร่งด่วน') }}
+        </p>
+      </div>
+
+      <div style="padding: 1.25rem; background: #fffbf9; border-radius: var(--radius-sm); border: 1px solid #ffedd5;">
+        <div style="font-size: 1.75rem; margin-bottom: 0.5rem; color: #f97316;"><i class="fa-solid fa-house-chimney"></i></div>
+        <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem; color: #1e2229;">4. ศูนย์พักพิงชั่วคราว</h4>
+        <p style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.6;">
+          {{ project_work.get('shelter', 'ศูนย์พักพิงชั่วคราว: พื้นที่ปลอดภัย สะอาด มีสุขอนามัยที่ดี รองรับการฟื้นฟูก่อนส่งต่อไปยังบ้านใหม่') }}
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

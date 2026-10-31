@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}แบบฟอร์ม 9.1 การสอบถามข้อมูลเบื้องต้นในการรับเลี้ยง {{ pet.name }} - PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 820px; padding-top: 1.5rem; padding-bottom: 3.5rem;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('client.pet_detail', pet_id=pet.id) }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.95rem;">
+      <i class="fa-solid fa-arrow-left" style="margin-right: 0.35rem;"></i> กลับไปยังข้อมูลของ {{ pet.name }}
+    </a>
+  </div>
+
+  <div class="card" style="border-top: 5px solid var(--primary);">
+    <div class="card-body" style="padding: 2.5rem 2rem;">
+      <!-- หัวข้อฟอร์ม -->
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="width: 56px; height: 56px; background: rgba(30,58,138,0.08); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.5rem;"><i class="fa-solid fa-clipboard-list" style="font-size: 1.85rem; color: var(--primary);"></i></div>
+        <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-top: 0.5rem;">
+          แบบฟอร์มการสอบถามข้อมูลเบื้องต้นในการรับเลี้ยง
+        </h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.3rem;">
+          กรอกเสมอเมื่อจะรับเลี้ยงน้อง <strong>{{ pet.name }}</strong>)
+        </p>
+      </div>
+
+      <!-- สรุปสัตว์ที่ต้องการรับเลี้ยง -->
+      <div style="display: flex; align-items: center; gap: 1.25rem; background: #fff7ed; padding: 1rem 1.25rem; border-radius: var(--radius); margin-bottom: 2rem; border: 1px solid #fed7aa;">
+        <img 
+          src="{{ pet.image_url }}" 
+          alt="{{ pet.name }}" 
+          style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px;"
+          onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800'"
+        >
+        <div>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: #1e293b;">น้อง: {{ pet.name }} ({{ pet.species }})</h3>
+          <p style="font-size: 0.85rem; color: #64748b;">
+            สายพันธุ์: {{ pet.breed }} | เพศ: {{ pet.gender }} | อายุ: {{ pet.age_years }} ปี {{ pet.age_months }} เดือน
+          </p>
+        </div>
+      </div>
+
+      <form method="POST" action="{{ url_for('client.adopt_application', pet_id=pet.id) }}">
+        <!-- 1. ชื่อ-สกุล -->
+        <div class="form-group">
+          <label class="form-label" for="applicant_name">ชื่อ-สกุล (ผู้ขอรับเลี้ยง) *</label>
+          <input 
+            type="text" 
+            id="applicant_name" 
+            name="applicant_name" 
+            class="form-control" 
+            placeholder="เช่น สมชาย ใจดี" 
+            value="{{ form.get('applicant_name', session.get('user_name', '')) }}" 
+            required
+          >
+        </div>
+
+        <!-- 2. ที่อยู่ปัจจุบัน & 3. รหัสไปรษณีย์ -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="address">ที่อยู่ปัจจุบัน *</label>
+            <input 
+              type="text" 
+              id="address" 
+              name="address" 
+              class="form-control" 
+              placeholder="เลขที่ หมู่บ้าน ซอย ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด" 
+              value="{{ form.get('address', '') }}" 
+              required
+            >
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="postal_code">รหัสไปรษณีย์ *</label>
+            <input 
+              type="text" 
+              id="postal_code" 
+              name="postal_code" 
+              class="form-control" 
+              placeholder="เช่น 10220" 
+              value="{{ form.get('postal_code', '') }}" 
+              required
+            >
+          </div>
+        </div>
+
+        <!-- 4. อีเมล & 5. ยืนยันอีเมล -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="email">อีเมล (E-Mail) *</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              class="form-control" 
+              placeholder="example@mail.com" 
+              value="{{ form.get('email', session.get('user_email', '')) }}" 
+              required
+            >
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="confirm_email">ยืนยันอีเมล *</label>
+            <input 
+              type="email" 
+              id="confirm_email" 
+              name="confirm_email" 
+              class="form-control" 
+              placeholder="กรอกอีเมลซ้ำอีกครั้ง" 
+              value="{{ form.get('confirm_email', session.get('user_email', '')) }}" 
+              required
+            >
+          </div>
+        </div>
+
+        <!-- 6. หมายเลขโทรศัพท์ & 7. ช่องทางติดต่ออื่นๆ -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="phone">หมายเลขโทรศัพท์ *</label>
+            <input 
+              type="tel" 
+              id="phone" 
+              name="phone" 
+              class="form-control" 
+              placeholder="เช่น 081-234-5678" 
+              value="{{ form.get('phone', '') }}" 
+              required
+            >
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="other_contacts">ช่องทางติดต่ออื่นๆ (Facebook, ID Line)</label>
+            <input 
+              type="text" 
+              id="other_contacts" 
+              name="other_contacts" 
+              class="form-control" 
+              placeholder="Facebook, ID Line" 
+              value="{{ form.get('other_contacts', '') }}"
+            >
+          </div>
+        </div>
+
+        <!-- 8. สนามบินนานาชาติที่ใกล้ที่สุด -->
+        <div class="form-group">
+          <label class="form-label" for="nearest_airport">8. สนามบินนานาชาติที่ใกล้ที่สุด *</label>
+          <input 
+            type="text" 
+            id="nearest_airport" 
+            name="nearest_airport" 
+            class="form-control" 
+            placeholder="เช่น สุวรรณภูมิ (BKK), ดอนเมือง (DMK), เชียงใหม่ (CNX), ภูเก็ต (HKT)" 
+            value="{{ form.get('nearest_airport', '') }}" 
+            required
+          >
+          <small style="color: var(--text-muted); font-size: 0.85rem;">* สำหรับการประสานงานการจัดส่งในกรณีที่อยู่ต่างจังหวัดหรือพื้นที่ห่างไกล</small>
+        </div>
+
+        <!-- 9. คุณอาศัยอยู่กับใครบ้างในครัวเรือน? -->
+        <div class="form-group">
+          <label class="form-label" for="household_members">9. คุณอาศัยอยู่กับใครบ้างในครัวเรือน? *</label>
+          <input 
+            type="text" 
+            id="household_members" 
+            name="household_members" 
+            class="form-control" 
+            placeholder="เช่น อาศัยอยู่คนเดียว / อยู่กับคู่สมรสและบุตร 1 คน / พักกับพ่อแม่" 
+            value="{{ form.get('household_members', '') }}" 
+            required
+          >
+        </div>
+
+        <!-- 10. ข้อตกลงร่วมกันของสมาชิกในครัวเรือน -->
+        <div class="form-group">
+          <label class="form-label" for="household_agreement">
+            10. สมาชิกทุกคนในครัวเรือนตกลงรับผิดชอบร่วมกันในการรับเลี้ยงสุนัขหรือแมวจรจากมูลนิธิเพื่อสุนัขในซอยประเทศไทยหรือไม่? *
+          </label>
+          <textarea 
+            id="household_agreement" 
+            name="household_agreement" 
+            class="form-control" 
+            placeholder="โปรดอธิบาย เช่น ทุกคนในบ้านเห็นพ้องต้องกันและยินดีช่วยกันดูแล..." 
+            required
+          >{{ form.get('household_agreement', '') }}</textarea>
+        </div>
+
+        <!-- 11. สัตว์เลี้ยงอื่นในบ้าน -->
+        <div class="form-group">
+          <label class="form-label" for="other_pets">
+            11. คุณมีสัตว์เลี้ยงอื่นหรือไม่? (ถ้ามี, กรุณาเขียนรายละเอียดสั้นๆ: อายุ ขนาด สายพันธุ์ เพศ และบุคลิกภาพจะช่วยได้มาก)
+          </label>
+          <textarea 
+            id="other_pets" 
+            name="other_pets" 
+            class="form-control" 
+            placeholder="เช่น มีแมวไทย 1 ตัว อายุ 3 ปี เพศเมีย ทำหมันแล้ว บุคลิกสงบ ไม่ก้าวร้าว / หากไม่มีให้พิมพ์ว่า 'ไม่มี'"
+          >{{ form.get('other_pets', '') }}</textarea>
+        </div>
+
+        <!-- 12. บรรยายสถานที่และที่ตั้งบ้าน -->
+        <div class="form-group">
+          <label class="form-label" for="house_description">
+            12. กรุณาบรรยายเกี่ยวกับสถานที่และที่ตั้งของบ้านของคุณ *
+          </label>
+          <textarea 
+            id="house_description" 
+            name="house_description" 
+            class="form-control" 
+            placeholder="เช่น บ้านเดี่ยว 2 ชั้น มีรั้วรอบขอบชิด พื้นที่สนามหญ้าหน้าบ้าน ปลอดภัยจากถนนใหญ่" 
+            required
+          >{{ form.get('house_description', '') }}</textarea>
+        </div>
+
+        <!-- 13. อาชีพและชั่วโมงการทำงาน -->
+        <div class="form-group">
+          <label class="form-label" for="job_and_hours">
+            13. คุณทำงานอะไรและทำงานกี่ชั่วโมง? *
+          </label>
+          <input 
+            type="text" 
+            id="job_and_hours" 
+            name="job_and_hours" 
+            class="form-control" 
+            placeholder="เช่น โปรแกรมเมอร์ ทำงานแบบ Work from Home วันละ 8 ชม. มีเวลาอยู่บ้านตลอด" 
+            value="{{ form.get('job_and_hours', '') }}" 
+            required
+          >
+        </div>
+
+        <!-- 14. ข้อมูลเพิ่มเติมและเหตุผลในการรับเลี้ยง -->
+        <div class="form-group">
+          <label class="form-label" for="reason_and_about">
+            14. กรุณาบอกเล่าข้อมูลเพิ่มเติมเกี่ยวกับตัวคุณและเหตุผลที่คุณสนใจในการรับเลี้ยงสุนัขหรือแมวจร *
+          </label>
+          <textarea 
+            id="reason_and_about" 
+            name="reason_and_about" 
+            class="form-control" 
+            placeholder="บอกเล่าความตั้งใจของคุณ และเหตุผลที่ตกหลุมรักน้องตัวนี้..." 
+            required
+          >{{ form.get('reason_and_about', '') }}</textarea>
+        </div>
+
+        <!-- 15. จุดให้ติ๊กยอมรับเงื่อนไขการรับเลี้ยง (ข้อกำหนดที่ 9.1) -->
+        <div class="form-check" style="background: #f0fdf4; border: 1.5px solid #bbf7d0; padding: 1.25rem; border-radius: var(--radius); margin-top: 1.5rem; margin-bottom: 2rem;">
+          <input type="checkbox" id="terms_accepted" name="terms_accepted" required>
+          <label for="terms_accepted" style="font-size: 0.95rem; color: #166534; cursor: pointer; line-height: 1.6;">
+            <strong>ยอมรับเงื่อนไขการรับเลี้ยง</strong><br>
+            ข้าพเจ้ายืนยันว่าข้อมูลข้างต้นเป็นความจริงทุกประการ ข้าพเจ้ายอมรับเงื่อนไขการรับเลี้ยงสัตว์ของมูลนิธิ PawLove ตกลงเข้าร่วมการสัมภาษณ์วิดีโอคอล ยินยอมให้มีการประเมินบ้าน และพร้อมให้การดูแลน้องตลอดช่วงอายุขัยโดยไม่ทอดทิ้ง
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; padding: 1rem;">
+          <i class="fa-solid fa-paw" style="margin-right: 0.35rem;"></i> ยืนยันการส่งแบบฟอร์มขอรับเลี้ยง
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

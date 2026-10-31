@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}เกี่ยวกับเรา - ข้อมูลและการทำงานของโครงการ PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 960px;">
+  <!-- ส่วนหัว -->
+  <div style="text-align: center; margin-bottom: 3rem;">
+    <span style="background: rgba(249, 115, 22, 0.1); color: var(--primary-orange); padding: 0.4rem 1rem; border-radius: 9999px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 0.75rem;">
+      <i class="fa-solid fa-paw"></i> เกี่ยวกับ PawLove
+    </span>
+    <h1 style="font-size: 2.4rem; font-weight: 800; color: var(--text-dark);">
+      ความเป็นมาและการดำเนินงานของโครงการ
+    </h1>
+  </div>
+
+  <!-- 1. ข้อมูลโครงการ -->
+  <div class="card" style="margin-bottom: 2.5rem; border-left: 6px solid var(--primary-orange);">
+    <div class="card-body" style="padding: 2.5rem;">
+      <h2 style="font-size: 1.6rem; font-weight: 700; color: var(--text-dark); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.6rem;">
+        <i class="fa-solid fa-building-columns" style="color: var(--primary-orange);"></i> ข้อมูลโครงการ PawLove
+      </h2>
+      <div style="font-size: 1.05rem; line-height: 1.8; color: #334155;">
+        <p style="margin-bottom: 1rem;">
+          {{ project_info }}
+        </p>
+        <p>
+          มูลนิธิและเครือข่ายจิตอาสา PawLove ทำงานร่วมกับสัตวแพทย์ ชุมชน และผู้ใจบุญทั่วประเทศ เพื่อสร้างมาตรฐานใหม่ในการคุ้มครองสวัสดิภาพสัตว์จรจัดในเมืองไทย โดยมุ่งเน้นการแก้ปัญหาที่ต้นเหตุอย่างมีจริยธรรมและความเมตตา
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. การทำงานของโครงการ 4 ด้าน -->
+  <div style="margin-bottom: 3rem;">
+    <h2 style="font-size: 1.6rem; font-weight: 700; color: var(--text-dark); margin-bottom: 1.5rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.6rem;">
+      <i class="fa-solid fa-network-wired" style="color: var(--primary-orange);"></i> การทำงานของโครงการ
+    </h2>
+
+    <div class="grid-2">
+      <!-- ด้านที่ 1: ดูแลการรักษา -->
+      <div class="card" style="border-top: 5px solid #ef4444;">
+        <div class="card-body">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <div style="width: 48px; height: 48px; border-radius: 10px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+              <i class="fa-solid fa-stethoscope"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700;">1. ดูแลการรักษา</h3>
+          </div>
+          <p style="color: #475569; font-size: 0.95rem; line-height: 1.7;">
+            {{ project_work.get('medical', 'ดูแลการรักษา: ให้การพยาบาลฟื้นฟูสัตว์ป่วยและบาดเจ็บอย่างเต็มความสามารถจนหายดี') }}
+          </p>
+          <ul style="margin-top: 1rem; font-size: 0.85rem; color: #64748b; line-height: 1.8; padding-left: 1.2rem;">
+            <li>ตรวจวินิจฉัยโรคและรักษาโดยสัตวแพทย์ผู้เชี่ยวชาญ</li>
+            <li>การผ่าตัดกระดูกและบาดแผลฉกรรจ์จากอุบัติเหตุ</li>
+            <li>ทำกายภาพบำบัดและดูแลอย่างใกล้ชิดตลอด 24 ชั่วโมง</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ด้านที่ 2: การทำหมัน -->
+      <div class="card" style="border-top: 5px solid #f59e0b;">
+        <div class="card-body">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <div style="width: 48px; height: 48px; border-radius: 10px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+              <i class="fa-solid fa-scissors"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700;">2. การทำหมัน</h3>
+          </div>
+          <p style="color: #475569; font-size: 0.95rem; line-height: 1.7;">
+            {{ project_work.get('sterilization', 'การทำหมัน: ทำหมันและฉีดวัคซีนป้องกันโรคพิษสุนัขบ้าเพื่อควบคุมประชากรสัตว์จรอย่างยั่งยืน') }}
+          </p>
+          <ul style="margin-top: 1rem; font-size: 0.85rem; color: #64748b; line-height: 1.8; padding-left: 1.2rem;">
+            <li>หน่วยทำหมันเคลื่อนที่ลงพื้นที่ชุมชนและวัด</li>
+            <li>ฉีดวัคซีนป้องกันโรคพิษสุนัขบ้าและโรคติดต่อรวม</li>
+            <li>ลดปัญหาการขยายพันธุ์สัตว์จรจัดอย่างมีมนุษยธรรม</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ด้านที่ 3: การช่วยเหลือฉุกเฉิน -->
+      <div class="card" style="border-top: 5px solid #0284c7;">
+        <div class="card-body">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <div style="width: 48px; height: 48px; border-radius: 10px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+              <i class="fa-solid fa-truck-medical"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700;">3. การช่วยเหลือฉุกเฉิน</h3>
+          </div>
+          <p style="color: #475569; font-size: 0.95rem; line-height: 1.7;">
+            {{ project_work.get('emergency', 'การช่วยเหลือฉุกเฉิน: หน่วยกู้ภัยสัตว์กรณีได้รับอุบัติเหตุหรือตกอยู่ในภาวะอันตรายเร่งด่วน') }}
+          </p>
+          <ul style="margin-top: 1rem; font-size: 0.85rem; color: #64748b; line-height: 1.8; padding-left: 1.2rem;">
+            <li>รับแจ้งเหตุด่วนกรณีสัตว์ถูกทำร้ายหรือติดในสถานที่อันตราย</li>
+            <li>ทีมกู้ภัยพร้อมอุปกรณ์ช่วยเหลือพิเศษ</li>
+            <li>ส่งต่อโรงพยาบาลสัตว์ทันทีอย่างทันท่วงที</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ด้านที่ 4: ศูนย์พักพิงชั่วคราว -->
+      <div class="card" style="border-top: 5px solid #10b981;">
+        <div class="card-body">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <div style="width: 48px; height: 48px; border-radius: 10px; background: #d1fae5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+              <i class="fa-solid fa-house-chimney"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700;">4. ศูนย์พักพิงชั่วคราว</h3>
+          </div>
+          <p style="color: #475569; font-size: 0.95rem; line-height: 1.7;">
+            {{ project_work.get('shelter', 'ศูนย์พักพิงชั่วคราว: พื้นที่ปลอดภัย สะอาด มีสุขอนามัยที่ดี รองรับการฟื้นฟูก่อนส่งต่อไปยังบ้านใหม่') }}
+          </p>
+          <ul style="margin-top: 1rem; font-size: 0.85rem; color: #64748b; line-height: 1.8; padding-left: 1.2rem;">
+            <li>มีพื้นที่วิ่งเล่นและสภาพแวดล้อมที่ส่งเสริมสุขภาพจิตสัตว์</li>
+            <li>ฝึกสอนพฤติกรรมเบื้องต้นให้พร้อมอยู่ร่วมกับครอบครัว</li>
+            <li>คัดกรองความเข้ากันได้ระหว่างผู้รับเลี้ยงกับน้องสัตว์</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-bottom: 3rem;">
+    <a href="{{ url_for('client.adopt') }}" class="btn btn-orange btn-lg" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+      <i class="fa-solid fa-paw"></i> ค้นหาน้องหมาและน้องแมวเพื่อรับเลี้ยงเลย
+    </a>
+  </div>
+</div>
+{% endblock %}

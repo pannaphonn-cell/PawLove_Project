@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}ยืนยันรหัส OTP - มูลนิธิ PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 520px; padding-top: 3rem; padding-bottom: 4rem;">
+  <div class="card card-official" style="border-top: 4px solid var(--primary-orange);">
+    <div class="card-body" style="padding: 2.5rem 2rem; text-align: center;">
+      <!-- ไอคอนกล่องจดหมาย -->
+      <div style="width: 70px; height: 70px; margin: 0 auto 1.25rem; background: #fff7ed; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 2rem; border: 2px solid #ffedd5;">
+        <i class="fa-solid fa-envelope-circle-check"></i>
+      </div>
+
+      <h2 style="font-size: 1.5rem; font-weight: 800; color: #1e2229; margin-bottom: 0.35rem;">
+        ยืนยันรหัส OTP ทางอีเมล
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+        ระบบได้ส่งรหัส OTP 6 หลักไปยังอีเมล<br>
+        <strong style="color: #1e293b; font-size: 1rem;">{{ email }}</strong>
+      </p>
+
+      <!-- นาฬิกานับถอยหลัง 5 นาที -->
+      <div style="margin-bottom: 1.5rem; display: inline-flex; align-items: center; gap: 0.5rem; background: #fff7ed; padding: 6px 16px; border-radius: 20px; border: 1px solid #fed7aa; color: #c2410c; font-size: 0.85rem; font-weight: 600;">
+        <i class="fa-solid fa-clock"></i>
+        <span>รหัสจะหมดอายุใน: <strong id="countdown-timer" style="font-family: monospace; font-size: 1.05rem; letter-spacing: 1px;">05:00</strong> นาที</span>
+      </div>
+
+      <form method="POST" action="{{ url_for('auth.verify_otp') }}">
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label class="form-label" for="otp_input" style="font-weight: 700; color: #334155; margin-bottom: 0.5rem; display: block;">
+            กรอกรหัส OTP 6 หลักที่ได้รับ *
+          </label>
+          <input 
+            type="text" 
+            id="otp_input" 
+            name="otp" 
+            maxlength="6" 
+            pattern="\d{6}" 
+            placeholder="• • • • • •" 
+            class="form-control" 
+            style="font-size: 1.8rem; letter-spacing: 0.5rem; text-align: center; font-weight: 800; height: 56px; max-width: 280px; margin: 0 auto; color: #ea580c;"
+            required
+            autofocus
+            autocomplete="one-time-code"
+          >
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn btn-orange btn-lg" style="width: 100%; padding: 0.85rem; font-weight: 700; font-size: 1rem;">
+          <i class="fa-solid fa-check" style="margin-right: 0.35rem;"></i> ยืนยันรหัส OTP และสร้างบัญชี
+        </button>
+      </form>
+
+      <div style="margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted); display: flex; justify-content: center; gap: 1rem;">
+        <a href="{{ url_for('auth.resend_otp') }}" id="resend-link" style="color: var(--primary-orange); text-decoration: none; font-weight: 600;">
+          <i class="fa-solid fa-rotate-right" style="margin-right: 0.25rem;"></i> ขอส่งรหัสใหม่อีกครั้ง
+        </a>
+        <span>|</span>
+        <a href="{{ url_for('auth.register') }}" style="color: #64748b; text-decoration: none;">
+          แก้ไขข้อมูลการสมัคร
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ตัวจับเวลานับถอยหลัง 5 นาที (300 วินาที)
+  let timeLeft = parseInt("{{ remaining_seconds if remaining_seconds is defined else 300 }}");
+  if (isNaN(timeLeft) || timeLeft <= 0) {
+    timeLeft = 0;
+  }
+
+  const timerEl = document.getElementById('countdown-timer');
+  const submitBtn = document.getElementById('submit-btn');
+
+  function updateTimerDisplay() {
+    if (timeLeft <= 0) {
+      timerEl.textContent = "00:00 (หมดอายุแล้ว)";
+      timerEl.style.color = "#dc2626";
+      return;
+    }
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  updateTimerDisplay();
+
+  const countdownInterval = setInterval(() => {
+    if (timeLeft > 0) {
+      timeLeft--;
+      updateTimerDisplay();
+    } else {
+      clearInterval(countdownInterval);
+      updateTimerDisplay();
+    }
+  }, 1000);
+
+  // กรองให้กรอกได้เฉพาะตัวเลข 6 หลักเท่านั้น
+  const otpInput = document.getElementById('otp_input');
+  otpInput.addEventListener('input', function(e) {
+    this.value = this.value.replace(/\D/g, '').slice(0, 6);
+  });
+</script>
+{% endblock %}

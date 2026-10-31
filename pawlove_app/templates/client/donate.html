@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}ร่วมบริจาคช่วยน้อง ๆ - PawLove{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 980px; padding-top: 1rem; padding-bottom: 3.5rem;">
+  <!-- หัวข้อหน้าบริจาค -->
+  <div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 1.85rem; font-weight: 800; color: #1e2229; margin-bottom: 0.35rem;">
+      ร่วมบริจาคช่วยเหลือน้องหมาและน้องแมว
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      ทุกการบริจาคของคุณ ช่วยให้พวกเขาได้รับการรักษาพยาบาล อาหาร และมีโอกาสใช้ชีวิตใหม่อย่างปลอดภัย
+    </p>
+  <!-- สรุปยอดรวมบริจาค: รายวัน, รายเดือน, รายปี -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+    <!-- ยอดบริจาครายวัน -->
+    <div class="card" style="padding: 1.25rem 1.5rem; border-left: 4px solid #10b981; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">
+            <i class="fa-solid fa-calendar-day" style="color: #10b981; margin-right: 0.3rem;"></i> ยอดบริจาควันนี้ (รายวัน)
+          </span>
+          <div style="font-size: 1.55rem; font-weight: 800; color: #1e2229; margin-top: 0.35rem;">
+            ฿ {{ "{:,.2f}".format(donations_daily) }}
+          </div>
+        </div>
+        <div style="width: 44px; height: 44px; border-radius: 10px; background: #ecfdf5; display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 1.25rem;">
+          <i class="fa-solid fa-coins"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- ยอดบริจาครายเดือน -->
+    <div class="card" style="padding: 1.25rem 1.5rem; border-left: 4px solid var(--primary-orange); background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">
+            <i class="fa-solid fa-calendar-week" style="color: var(--primary-orange); margin-right: 0.3rem;"></i> ยอดบริจาคเดือนนี้ (รายเดือน)
+          </span>
+          <div style="font-size: 1.55rem; font-weight: 800; color: var(--primary-orange); margin-top: 0.35rem;">
+            ฿ {{ "{:,.2f}".format(donations_monthly) }}
+          </div>
+        </div>
+        <div style="width: 44px; height: 44px; border-radius: 10px; background: #fff7ed; display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.25rem;">
+          <i class="fa-solid fa-hand-holding-heart"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- ยอดบริจาครายปี -->
+    <div class="card" style="padding: 1.25rem 1.5rem; border-left: 4px solid #6366f1; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">
+            <i class="fa-solid fa-calendar" style="color: #6366f1; margin-right: 0.3rem;"></i> ยอดบริจาคปีนี้ (รายปี)
+          </span>
+          <div style="font-size: 1.55rem; font-weight: 800; color: #4338ca; margin-top: 0.35rem;">
+            ฿ {{ "{:,.2f}".format(donations_yearly) }}
+          </div>
+        </div>
+        <div style="width: 44px; height: 44px; border-radius: 10px; background: #eef2ff; display: flex; align-items: center; justify-content: center; color: #6366f1; font-size: 1.25rem;">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- การ์ดรวม QR Code และ PromptPay เข้าด้วยกันตามข้อกำหนด -->
+  <div class="card" style="padding: 1.5rem; margin-bottom: 2rem; background: linear-gradient(135deg, #f8fafc 0%, #fffbf9 100%); border: 1.5px solid #ffedd5;">
+    <div style="display: grid; grid-template-columns: 260px 1fr; gap: 2rem; align-items: center;">
+      <!-- รูป QR Code ที่แนบมา -->
+      <div style="text-align: center;">
+        <div style="background: white; padding: 0.75rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 1px solid var(--border-light); display: inline-block;">
+          <img 
+            src="{{ url_for('static', filename='images/promptpay_qr.jpg') }}" 
+            alt="Thai QR Payment / PromptPay" 
+            style="width: 220px; height: auto; border-radius: 8px; display: block;"
+          >
+        </div>
+        <span style="font-size: 0.75rem; color: var(--text-light); display: block; margin-top: 0.5rem;">
+          <i class="fa-solid fa-qrcode" style="margin-right: 0.35rem;"></i> สแกน QR ผ่านแอปพลิเคชันทุกธนาคาร
+        </span>
+      </div>
+
+      <!-- ข้อมูลบัญชีและการโอนเงิน (Thai QR + PromptPay รวมเป็นหนึ่งเดียว) -->
+      <div>
+        <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: #003d79; color: white; padding: 0.35rem 0.85rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.85rem;">
+          <span><i class="fa-solid fa-mobile-screen-button"></i></span> THAI QR PAYMENT / PromptPay
+        </div>
+        <h3 style="font-size: 1.35rem; font-weight: 800; color: #1e2229; margin-bottom: 0.5rem;">
+          สแกน QR เพื่อโอนสนับสนุนโครงการ
+        </h3>
+
+        <div style="background: white; border-radius: 8px; padding: 1rem; border: 1px solid var(--border-light); display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; font-size: 0.885rem;">
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-light); display: block;">ชื่อบัญชี:</span>
+            <strong style="color: #004d40;">น.ส. ปัณณพร เนืองทอง</strong>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-light); display: block;">ธนาคาร:</span>
+            <strong style="color: #138f2d;">ธนาคารกสิกรไทย (K-Bank)</strong>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-light); display: block;">เลขที่บัญชี:</span>
+            <strong style="font-family: monospace; color: #1e2229; font-size: 0.95rem;">xxx-x-x6463-x</strong>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-light); display: block;">เลขอ้างอิง:</span>
+            <strong style="font-family: monospace; color: #0284c7;">004999171860413</strong>
+          </div>
+        </div>
+
+        <div style="margin-top: 0.85rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #166534; background: #f0fdf4; padding: 0.45rem 0.85rem; border-radius: 6px; border: 1px solid #bbf7d0;">
+          <span><i class="fa-solid fa-shield-halved" style="color: #166534;"></i></span>
+          <span><strong>ระบบตรวจสอบหลักฐานการเงินอัตโนมัติ:</strong> กรุณาแนบภาพหลักฐานโอนเงินหลังจากสแกน เพื่อให้ระบบตรวจสอบความถูกต้อง</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- แบบฟอร์มกรอกข้อมูลการบริจาคและแนบสลีป -->
+  <form method="POST" action="{{ url_for('client.donate') }}" enctype="multipart/form-data">
+    <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
+      <!-- คอลัมน์ซ้าย: ข้อมูลผู้บริจาค & แนบสลีป -->
+      <div class="card" style="padding: 1.75rem;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: #1e2229; margin-bottom: 1.25rem;">
+          ข้อมูลผู้บริจาค & แนบหลักฐานการโอนเงิน
+        </h3>
+
+        <!-- เลือกระบุสัตว์ (เฉพาะสัตว์ป่วย/รอช่วยเหลือ ตามข้อกำหนดที่ 3) -->
+        <div class="form-group">
+          <label class="form-label" for="pet_id">ระบุสัตว์ที่ต้องการช่วยเหลือ</label>
+          <select id="pet_id" name="pet_id" class="form-control">
+            <option value="">-- บริจาคเข้ากองทุนกลางโครงการ PawLove --</option>
+            {% for p in needy_pets %}
+            <option value="{{ p.id }}" {% if selected_pet_id == p.id %}selected{% endif %}>
+              {{ p.name }} ({{ p.species }}) - {{ p.status }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="donor_name">ชื่อ - นามสกุล *</label>
+          <input type="text" id="donor_name" name="donor_name" class="form-control" placeholder="เช่น กานต์ชนก สุขใจ" value="{{ session.get('user_name', '') }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="amount">จำนวนเงินที่โอน (บาท) *</label>
+          <input type="number" id="amount" name="amount" class="form-control" placeholder="เช่น 500" min="1" step="any" required>
+        </div>
+
+        <!-- กล่องอัปโหลดสลีปโอนเงินจริง (พร้อมระบบตรวจสอบ) -->
+        <div class="form-group">
+          <label class="form-label" for="slip_file" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>แนบหลักฐานการโอนจริง *</span>
+            <span style="font-size: 0.75rem; color: var(--primary-orange); font-weight: 700;">ตรวจสอบอัตโนมัติ</span>
+          </label>
+          
+          <div style="border: 2px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 1.25rem; text-align: center; background: #fafbfc; position: relative;">
+            <input 
+              type="file" 
+              id="slip_file" 
+              name="slip_file" 
+              accept="image/*" 
+              class="form-control" 
+              style="margin-bottom: 0.5rem;"
+              onchange="previewAndCheckSlip(this)" 
+              required
+            >
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+              <i class="fa-solid fa-cloud-arrow-up" style="margin-right: 0.35rem;"></i> เลือกรูปภาพหลักฐานการโอนเงิน (ระบบรองรับทุกไฟล์ภาพ)
+            </div>
+            <div style="font-size: 0.75rem; color: #b45309; margin-top: 0.35rem;">
+              <i class="fa-solid fa-triangle-exclamation" style="margin-right: 0.35rem;"></i> ระบบจะตรวจสอบ QR Code หรือข้อมูลมาตรฐานธนาคาร ต้องเป็นหลักฐานการโอนเงินจริงเท่านั้น
+            </div>
+
+            <!-- กล่องพรีวิวสลีปที่เลือก -->
+            <div id="slipPreviewWrap" style="display: none; margin-top: 0.75rem; text-align: center;">
+              <img id="slipPreviewImg" src="" style="max-height: 180px; max-width: 100%; border-radius: 6px; border: 1px solid var(--border-light); box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+              <div id="slipPreviewStatus" style="font-size: 0.785rem; font-weight: 700; color: #166534; margin-top: 0.35rem;">
+                <i class="fa-solid fa-circle-check" style="margin-right: 0.35rem;"></i> เลือกไฟล์ภาพเรียบร้อยแล้ว พร้อมส่งตรวจหลักฐานการโอนเงิน
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-check">
+          <input type="checkbox" id="anon" name="anon" value="1">
+          <label for="anon" style="font-size: 0.85rem; color: var(--text-muted); cursor: pointer;">
+            ไม่เปิดเผยชื่อผู้บริจาค (แสดงเป็นผู้ไม่ประสงค์ออกนาม)
+          </label>
+        </div>
+      </div>
+
+      <!-- คอลัมน์ขวา: วัตถุประสงค์ & ยืนยันบริจาค -->
+      <div class="card" style="padding: 1.75rem; display: flex; flex-direction: column;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: #1e2229; margin-bottom: 1.25rem;">
+          เลือกวัตถุประสงค์ & ข้อความ
+        </h3>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.885rem;">
+          <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer;">
+            <input type="radio" name="purpose" value="medical" checked style="accent-color: var(--primary-orange);">
+            <strong>ค่ารักษาพยาบาลและการผ่าตัด</strong>
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer;">
+            <input type="radio" name="purpose" value="medicine" style="accent-color: var(--primary-orange);">
+            ค่าวัคซีน ยา และเวชภัณฑ์
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer;">
+            <input type="radio" name="purpose" value="care" style="accent-color: var(--primary-orange);">
+            ค่าทำหมันและฟื้นฟูสุขภาพ
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer;">
+            <input type="radio" name="purpose" value="general" style="accent-color: var(--primary-orange);">
+            อาหารและศูนย์พักพิงชั่วคราว
+          </label>
+        </div>
+
+        <div class="form-group" style="flex: 1;">
+          <label class="form-label" for="message">ข้อความส่งกำลังใจให้น้อง ๆ (ถ้ามี)</label>
+          <textarea id="message" name="message" class="form-control" placeholder="เช่น ขอให้น้อง ๆ ปลอดภัย แข็งแรง และได้บ้านใหม่ไว ๆ..." style="height: 110px;"></textarea>
+        </div>
+
+        {% if session.get('user_id') %}
+        <button type="submit" class="btn btn-orange" style="width: 100%; padding: 0.85rem; font-size: 1rem; font-weight: 700; margin-top: auto;">
+          ยืนยันการบริจาคและส่งตรวจหลักฐานการโอนเงิน <i class="fa-solid fa-paw" style="margin-left: 0.35rem;"></i>
+        </button>
+        {% else %}
+        <div style="background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 8px; padding: 1rem; margin-top: auto; text-align: center;">
+          <div style="font-weight: 700; color: #9a3412; font-size: 0.9rem; margin-bottom: 0.35rem;">
+            <i class="fa-solid fa-lock" style="margin-right: 0.3rem;"></i> ต้องเข้าสู่ระบบก่อนร่วมบริจาค
+          </div>
+          <p style="font-size: 0.825rem; color: #7c2d12; margin-bottom: 0.75rem; line-height: 1.4;">
+            ผู้เยี่ยมชมทั่วไปสามารถดูข้อมูลได้ แต่การร่วมบริจาคและส่งหลักฐานโอนเงินจำเป็นต้องเข้าสู่ระบบ
+          </p>
+          <a href="{{ url_for('auth.login') }}" class="btn btn-orange btn-sm" style="display: inline-block; width: 100%; font-weight: 700; padding: 0.65rem;">
+            เข้าสู่ระบบเพื่อร่วมบริจาค <i class="fa-solid fa-arrow-right" style="margin-left: 0.25rem;"></i>
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+
+  <!-- รายนามผู้บริจาคล่าสุด -->
+  {% if recent_donations %}
+  <div class="card" style="padding: 1.5rem;">
+    <h3 style="font-size: 1rem; font-weight: 700; color: #1e2229; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+      <span><i class="fa-solid fa-heart" style="color: #ef4444;"></i></span> รายนามผู้ร่วมบริจาคล่าสุด (ขอขอบพระคุณทุกน้ำใจ)
+    </h3>
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+      {% for d in recent_donations %}
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0; border-bottom: 1px solid var(--border-light); font-size: 0.885rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <strong>{{ d.donor_name }}</strong>
+          {% if d.is_verified == 1 %}
+          <span style="font-size: 0.725rem; color: #166534; background: #f0fdf4; padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid #bbf7d0; margin-left: 0.4rem;">
+            <i class="fa-solid fa-circle-check" style="margin-right: 0.25rem;"></i> หลักฐานการโอนเงินผ่านการตรวจ
+          </span>
+          {% endif %}
+          {% if d.message %}<span style="color: var(--text-muted); margin-left: 0.5rem; font-size: 0.825rem;">"{{ d.message }}"</span>{% endif %}
+        </div>
+        <div style="color: var(--primary-orange); font-weight: 700; font-size: 0.95rem;">
+          +฿ {{ "{:,.2f}".format(d.amount) }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function previewAndCheckSlip(input) {
+  const wrap = document.getElementById('slipPreviewWrap');
+  const img = document.getElementById('slipPreviewImg');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      if (img && wrap) {
+        img.src = e.target.result;
+        wrap.style.display = 'block';
+      }
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

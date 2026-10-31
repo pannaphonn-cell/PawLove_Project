@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}สัตว์ที่ฉันดูแลและคำขอของฉัน - PawLove{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-dark);">
+        <i class="fa-solid fa-paw" style="color: var(--primary); margin-right: 0.35rem;"></i> สัตว์ของฉันและสถานะคำขอ
+      </h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        จัดการสัตว์ที่คุณช่วยหาบ้าน และติดตามผลการอนุมัติจากแอดมิน
+      </p>
+    </div>
+    <a href="{{ url_for('client.help_pet') }}" class="btn btn-primary">
+      <i class="fa-solid fa-plus" style="margin-right: 0.35rem;"></i> เพิ่มสัตว์หาบ้านตัวใหม่
+    </a>
+  </div>
+
+  <!-- ส่วนที่ 1: รายการสัตว์ที่ได้รับการอนุมัติและเผยแพร่แล้ว -->
+  <div class="card" style="margin-bottom: 2.5rem;">
+    <div class="card-header">
+      <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-dark);">
+        <i class="fa-solid fa-circle-check" style="color: #166534; margin-right: 0.35rem;"></i> สัตว์ที่ได้รับการอนุมัติและเผยแพร่แล้วในระบบ (สามารถขอยื่นแก้ไขข้อมูลได้)
+      </h3>
+    </div>
+    <div class="card-body">
+      {% if pets %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {% for pet in pets %}
+          <div style="display: flex; gap: 1.5rem; align-items: center; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; flex-wrap: wrap;">
+            <img 
+              src="{{ pet.image_url }}" 
+              alt="{{ pet.name }}" 
+              style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;"
+              onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800'"
+            >
+            <div style="flex: 1; min-width: 200px;">
+              <h4 style="font-size: 1.15rem; font-weight: 700;">{{ pet.name }} ({{ pet.species }})</h4>
+              <p style="font-size: 0.85rem; color: #64748b;">
+                สายพันธุ์: {{ pet.breed }} | อายุ: {{ pet.age_years }} ปี {{ pet.age_months }} เดือน | เพศ: {{ pet.gender }}
+              </p>
+              <div style="margin-top: 0.25rem;">
+                <span class="status-badge 
+                  {% if 'กำลังหาบ้าน' in pet.status in pet.status %}status-healthy
+                  {% elif 'รักษา' in pet.status %}status-treating
+                  {% elif 'รอรับการช่วยเหลือ' in pet.status or 'รอ' in pet.status %}status-waiting
+                  {% else %}status-adopted{% endif %}">
+                  {{ pet.status }}
+                </span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <a href="{{ url_for('client.pet_detail', pet_id=pet.id) }}" class="btn btn-outline btn-sm">
+                ดูหน้าโปรไฟล์
+              </a>
+              <!-- ปุ่มขอยื่นแก้ไขข้อมูลสัตว์ (ข้อกำหนดที่ 2) -->
+              <a href="{{ url_for('client.request_edit_pet', pet_id=pet.id) }}" class="btn btn-secondary btn-sm" title="ยื่นคำขอแก้ไขข้อมูลสัตว์ให้แอดมินอนุมัติ">
+                <i class="fa-solid fa-pen-to-square" style="margin-right: 0.35rem;"></i> ขอยื่นแก้ไขข้อมูล (รออนุมัติ)
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); text-align: center; padding: 2rem;">
+          คุณยังไม่มีสัตว์ที่ได้รับการอนุมัติเผยแพร่ในระบบ
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ส่วนที่ 2: ประวัติคำขอ (รออนุมัติ / อนุมัติแล้ว / ปฏิเสธ) -->
+  <div class="card">
+    <div class="card-header">
+      <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-dark);">
+        <i class="fa-regular fa-clock" style="margin-right: 0.35rem;"></i> ประวัติคำขอเพิ่มสัตว์และคำขอแก้ไขข้อมูลสัตว์ (รอแอดมินอนุมัติ)
+      </h3>
+    </div>
+    <div class="card-body">
+      {% if requests %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {% for req in requests %}
+          <div style="padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 8px; background: #fafafa;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div>
+                <span style="font-weight: 700; font-size: 1rem;">
+                  {% if req.request_type == 'add' %}
+                    <i class="fa-solid fa-plus" style="margin-right: 0.35rem; color: var(--primary);"></i> คำขอเพิ่มสัตว์ใหม่: {{ req.data.get('name', 'ไม่ระบุ') }} ({{ req.data.get('species') }})
+                  {% else %}
+                    <i class="fa-solid fa-pen-to-square" style="margin-right: 0.35rem; color: var(--secondary);"></i> คำขอแก้ไขข้อมูลสัตว์: {{ req.data.get('name', 'ไม่ระบุ') }}
+                  {% endif %}
+                </span>
+                <span style="font-size: 0.8rem; color: #94a3b8; margin-left: 0.5rem;">
+                  ยื่นเมื่อ: {{ req.created_at }}
+                </span>
+              </div>
+              <div>
+                {% if req.status == 'pending' %}
+                  <span class="status-badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a;">
+                    <i class="fa-solid fa-hourglass-half" style="margin-right: 0.25rem;"></i> รอแอดมินอนุมัติ
+                  </span>
+                {% elif req.status == 'approved' %}
+                  <span class="status-badge" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac;">
+                    <i class="fa-solid fa-circle-check" style="margin-right: 0.25rem;"></i> ได้รับการอนุมัติแล้ว
+                  </span>
+                {% else %}
+                  <span class="status-badge" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;">
+                    <i class="fa-solid fa-circle-xmark" style="margin-right: 0.25rem;"></i> ปฏิเสธ: {{ req.admin_notes or 'ไม่ผ่านเกณฑ์' }}
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+
+            <p style="font-size: 0.85rem; color: #475569;">
+              <strong>สถานะที่เสนอ:</strong> {{ req.data.get('status') }} | <strong>ผู้ดูแล:</strong> {{ req.data.get('caretaker_name') }} | <strong>ที่อยู่:</strong> {{ req.data.get('current_address') }}
+            </p>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); text-align: center; padding: 2rem;">
+          ไม่มีประวัติคำขอที่รอดำเนินการ
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
